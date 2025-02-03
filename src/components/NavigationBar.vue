@@ -1,6 +1,6 @@
 <template>
   <header>
-    <section class="top-logo">
+    <section class="top-logo" @click="() => $router.push('/')">
       <svg
         class="logo"
         width="40"
@@ -25,8 +25,8 @@
     </div>
     <nav>
       <ul class="nav-links" :class="{ menu: menuOpen }">
-        <li><a href="#">Features</a></li>
-        <li><a href="#">How it Works</a></li>
+        <li><a href="/#features">Features</a></li>
+        <li><a href="/#how-it-works">How it Works</a></li>
       </ul>
     </nav>
     <a href="#" class="cta getting-started"><router-link to="/login">Get Started</router-link> </a>
@@ -39,21 +39,21 @@ export default {
   data() {
     return {
       menuOpen: false,
-    };
+    }
   },
   methods: {
     menuIsClicked() {
-      this.menuOpen = !this.menuOpen;
+      this.menuOpen = !this.menuOpen
     },
     navigateToSignIn() {
-      this.$router.push({ path: "/getting-started" });
+      this.$router.push({ path: '/getting-started' })
     },
   },
-};
+}
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@500&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@500&display=swap');
 * {
   box-sizing: border-box;
   margin: 8px;
@@ -62,7 +62,7 @@ export default {
 }
 li,
 a {
-  font-family: "Work Sans", sans-serif;
+  font-family: 'Work Sans', sans-serif;
   font-weight: 500;
   font-size: 22px;
   color: #141414;
@@ -143,7 +143,7 @@ header {
   }
 
   .menu-icon::before {
-    content: "☰";
+    content: '☰';
     font-size: 30px;
     cursor: pointer;
   }

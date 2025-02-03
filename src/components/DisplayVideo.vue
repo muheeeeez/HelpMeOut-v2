@@ -1,25 +1,12 @@
-<!-- src/components/VideoList.vue -->
 <template>
   <hr />
   <div class="video-list-container">
-    <!-- Search Bar -->
-    <!-- <div class="search-bar">
-      <input
-        type="text"
-        placeholder="Search Videos..."
-        v-model="searchQuery"
-        @input="filterVideos"
-      />
-    </div> -->
-    <!-- Loading Indicator -->
     <div v-if="isLoading" class="loading">
       <p>Loading your videos...</p>
     </div>
-    <!-- Error Message -->
     <div v-if="error" class="error">
       <p>{{ error }}</p>
     </div>
-    <!-- No Videos Message -->
     <div v-if="!isLoading && filteredVideos.length === 0" class="no-videos">
       <p>You have not uploaded any videos yet.</p>
     </div>
@@ -35,7 +22,6 @@
         <div class="video-info">
           <div>
             <h2 class="video-name">{{ video.videoName }}</h2>
-            <!-- <span>{{ formattedDurations[index] }}</span> -->
             <p class="uploaded-at">{{ formatDate(video.uploadedAt) }}</p>
           </div>
           <div>
@@ -53,92 +39,64 @@
             />
           </div>
         </div>
-
         <button @click="deleteVideo(video)" class="delete-button">Delete</button>
       </div>
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
-import { useAuthStore } from '../stores/auth'
-import { db, storage } from '../firebase' // Adjust the path as needed
+import {
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  watch,
+  defineProps,
+  computed,
+  defineExpose,
+} from 'vue'
 import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
 import { deleteObject, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toast-notification' // Ensure vue-toast-notification is installed
+import { useToast } from 'vue-toast-notification'
+import { db, storage } from '../firebase'
+import { useAuthStore } from '../stores/auth'
 
-// Import the auth store
+const props = defineProps({
+  childValue: {
+    type: String,
+    default: '',
+  },
+})
+
 const authStore = useAuthStore()
-
-// Reactive Variables
-const userVideos = ref([])
-const filteredVideos = ref([])
-const error = ref('')
-const searchQuery = ref('')
-const formattedDurations = ref([])
-const videoRefs = ref([])
 const router = useRouter()
 const toast = useToast()
 
+const userVideos = ref([])
+const filteredVideos = ref([])
+const error = ref('')
+const isLoading = ref(true)
+const formattedDurations = ref([])
+const videoRefs = ref([])
 let unsubscribeVideos = null
 
-// Function to Format Firestore Timestamps
-const formatDate = (timestamp) => {
-  if (timestamp && typeof timestamp.toDate === 'function') {
-    const date = timestamp.toDate()
-    const options = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour12: false,
-    }
-    return date.toLocaleDateString(undefined, options)
-  }
-  return ''
-}
+// Convert the parent's prop into a computed, so we can rely on reactivity
+const searchQuery = computed(() => props.childValue)
 
-const formatTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-  return `${mins}:${secs < 10 ? '0' + secs : secs}`
-}
-
-const updateDuration = (index) => {
-  nextTick(() => {
-    const video = videoRefs.value[index]
-    if (video) {
-      formattedDurations.value[index] = formatTime(video.duration)
-    }
-  })
-}
-
-const copyToClipboard = async (video) => {
-  try {
-    await navigator.clipboard.writeText(video.downloadURL)
-    toast.info('Copied to clipboard')
-  } catch (err) {
-    toast.error('Copy Error ' + err.message, {
-      position: 'top-right',
-    })
-  }
-}
-
-// Fetch and validate user videos from Firestore
 onMounted(() => {
   if (authStore.user) {
     fetchVideos()
   }
 })
 
-// Watch for changes in authStore.user to fetch videos when authenticated
 watch(
   () => authStore.user,
   (newUser) => {
     if (newUser) {
       fetchVideos()
     } else {
-      // If user logs out, clean up
       if (unsubscribeVideos) {
         unsubscribeVideos()
         unsubscribeVideos = null
@@ -146,68 +104,62 @@ watch(
       userVideos.value = []
       filteredVideos.value = []
     }
-  }
+  },
 )
 
-// Function to fetch videos
-const fetchVideos = () => {
+function fetchVideos() {
   const user = authStore.user
   if (!user) {
     error.value = 'User not authenticated.'
+    isLoading.value = false
     return
   }
-
   const videosCollectionRef = collection(db, 'users', user.uid, 'videos')
   const videosQueryObj = query(videosCollectionRef, orderBy('uploadedAt', 'desc'))
 
   unsubscribeVideos = onSnapshot(
     videosQueryObj,
     async (querySnapshot) => {
+      isLoading.value = true
       userVideos.value = []
       querySnapshot.forEach((docSnap) => {
         userVideos.value.push({ id: docSnap.id, ...docSnap.data() })
       })
-      await validateVideos() // Check for ghost videos
+      await validateVideos()
       filteredVideos.value = userVideos.value
-      console.log('Updated videos:', userVideos.value)
+      isLoading.value = false
     },
     (err) => {
-      console.error('Error fetching videos:', err)
       error.value = 'Failed to load videos.'
       toast.error('Failed to load videos: ' + err.message, { position: 'top-right' })
+      isLoading.value = false
     },
   )
 }
 
-// Cleanup Firestore listener when component is unmounted
 onBeforeUnmount(() => {
   if (unsubscribeVideos) {
     unsubscribeVideos()
   }
 })
 
-// Validate videos: Remove Firestore entries for missing files
-const validateVideos = async () => {
+async function validateVideos() {
   const validVideos = []
-
   for (const video of userVideos.value) {
     try {
-      await getDownloadURL(storageRef(storage, video.downloadURL)) // Check if file exists
+      await getDownloadURL(storageRef(storage, video.downloadURL))
       validVideos.push(video)
-    } catch (error) {
-      console.warn(`Ghost video detected: ${video.videoName}, removing metadata...` + error)
-
-      // Delete metadata from Firestore
+    } catch (e) {
       await deleteDoc(doc(db, 'users', authStore.user.uid, 'videos', video.id))
+      console.log('Removed ghost video:', video.videoName)
+      console.error(e)
     }
   }
-
   userVideos.value = validVideos
   filteredVideos.value = validVideos
 }
 
-// Search and Filter Function
-const filterVideos = () => {
+function filterVideos() {
   if (!searchQuery.value) {
     filteredVideos.value = userVideos.value
   } else {
@@ -218,12 +170,41 @@ const filterVideos = () => {
   }
 }
 
-// Delete Video Function
-const deleteVideo = async (video) => {
-  if (!confirm(`Are you sure you want to delete "${video.videoName}"?`)) {
-    return
-  }
+function updateDuration(index) {
+  nextTick(() => {
+    const videoEl = videoRefs.value[index]
+    if (videoEl) {
+      formattedDurations.value[index] = formatTime(videoEl.duration)
+    }
+  })
+}
 
+function formatDate(timestamp) {
+  if (timestamp && typeof timestamp.toDate === 'function') {
+    const date = timestamp.toDate()
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour12: false }
+    return date.toLocaleDateString(undefined, options)
+  }
+  return ''
+}
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${mins}:${secs < 10 ? '0' + secs : secs}`
+}
+
+async function copyToClipboard(video) {
+  try {
+    await navigator.clipboard.writeText(video.downloadURL)
+    toast.info('Copied to clipboard')
+  } catch (err) {
+    toast.error('Copy Error ' + err.message, { position: 'top-right' })
+  }
+}
+
+async function deleteVideo(video) {
+  if (!confirm(`Are you sure you want to delete "${video.videoName}"?`)) return
   try {
     const user = authStore.user
     if (!user) {
@@ -231,107 +212,120 @@ const deleteVideo = async (video) => {
       toast.error('User not authenticated.', { position: 'top-right' })
       return
     }
-
-    // Delete from Firebase Storage
     const videoStorageRefPath = `videos/${user.uid}/${video.videoName}`
     const videoStorageReference = storageRef(storage, videoStorageRefPath)
 
     try {
       await deleteObject(videoStorageReference)
-      console.log('Video deleted from storage.')
     } catch (err) {
-      console.warn('Storage file already missing, skipping...' + err)
+      console.warn('Storage file missing, skipping...', err)
     }
 
-    // Delete from Firestore Subcollection
     const videoDocRef = doc(db, 'users', user.uid, 'videos', video.id)
     await deleteDoc(videoDocRef)
-    console.log('Video metadata removed from Firestore.')
 
-    // Update UI
     userVideos.value = userVideos.value.filter((v) => v.id !== video.id)
     filterVideos()
     toast.success(`"${video.videoName}" deleted successfully!`, { position: 'top-right' })
   } catch (err) {
-    console.error('Error deleting video:', err)
     error.value = 'Failed to delete video.'
     toast.error('Failed to delete video: ' + err.message, { position: 'top-right' })
   }
 }
 
-// **New Method to Navigate to Detail Page with Video State**
-const viewDetails = (video) => {
+function viewDetails(video) {
   router.push({
-    name: 'ViewDetails', // Ensure this matches your route name
+    name: 'ViewDetails',
     params: { id: video.id },
-    state: { video }, // Pass the entire video object
+    state: { video },
   })
 }
+defineExpose({
+  filterVideos,
+  filteredVideos,
+})
 </script>
 
 <style scoped>
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+hr {
+  border: none;
+  border-top: 1px solid #dfe1e5;
+  margin-bottom: 20px;
 }
 .video-list-container {
-  display: flex;
-  flex-wrap: nowrap; /* Prevents wrapping, enabling horizontal scroll */
-  overflow-x: auto;
-  justify-content: space-between;
   padding: 0 5%;
-  align-items: center;
-  width: 100vw;
-  margin-top: 40px;
+}
+.loading,
+.error,
+.no-videos {
+  text-align: center;
+  margin-top: 20px;
+  color: #555;
+  font-size: 18px;
 }
 .videos-grid {
   display: flex;
-  justify-content: center;
-  gap: 74px;
   flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  margin-top: 20px;
 }
 .video-item {
-  width: 557px;
-  height: 322px;
+  width: 550px;
   border: 1px solid #b6b3c6;
-  border-radius: 30px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin: 10px;
+  border-radius: 16px;
   background-color: #f8fafc;
-  padding: 16px 16px 24px 16px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 16px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
-
 .card-video {
-  margin-bottom: 15px;
-  width: 525px;
-  height: 208px;
+  width: 100%;
+  height: 300px;
   border-radius: 10px;
-  /* border: 1px solid #b6b3c6; */
+  margin-bottom: 12px;
   object-fit: cover;
-}
-.video-item h2 {
-  font-size: 25px;
-  font-weight: 500;
-  line-height: 23.46px;
-  margin-bottom: 10px;
-}
-.video-item p {
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 18.77px;
-  color: #b6b3c6;
+  background: #000;
 }
 .video-info {
+  width: 100%;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
+.video-name {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+.uploaded-at {
+  font-size: 14px;
+  color: #888;
+  margin: 0;
+}
+.info,
 .more {
   cursor: pointer;
+  width: 24px;
+  height: 24px;
 }
-.info {
-  margin-right: 20px;
+.delete-button {
+  margin-top: auto;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #f44336;
+  color: #fff;
+  font-weight: 600;
   cursor: pointer;
+  align-self: flex-end;
+  transition: background-color 0.2s;
+}
+.delete-button:hover {
+  background-color: #d32f2f;
 }
 </style>

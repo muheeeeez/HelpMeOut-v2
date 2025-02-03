@@ -1,5 +1,5 @@
 <template>
-  <div class="top">
+  <div class="top" id="features">
     <div class="title-container">
       <h1>Features</h1>
       <p>Key Highlights of Our Extension</p>

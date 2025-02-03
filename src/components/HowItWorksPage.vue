@@ -1,5 +1,5 @@
 <template>
-  <div class="title">
+  <div class="title" id="how-it-works">
     <div class="heading"><h1>How it works</h1></div>
     <div class="card-container">
       <div class="card">

@@ -4,25 +4,32 @@
       <div class="text-left-container">
         <h1>Show Them Don't Just Tell</h1>
         <p>
-          Help your friends and loved ones by creating and sending videos on how
-          to get things done on a website
+          Help your friends and loved ones by creating and sending videos on how to get things done
+          on a website
         </p>
       </div>
-      <button >Install HelpMeOut &rarr;</button>
+      <button>Install HelpMeOut &rarr;</button>
     </div>
     <div class="boxes-photo">
       <div class="photo-container">
         <div class="photo-gallery">
           <div class="column">
-            <div class="photo oldwoman-photo">
-              <img src="../assets/images/oldwoman.jpg" alt="" />
-            </div>
+            <transition name="slide-from-left">
+              <div class="photo oldwoman-photo" v-if="showImage">
+                <img src="../assets/images/oldwoman.jpg" alt="" />
+              </div>
+            </transition>
+
             <div class="photo man-photo">
-              <img src="../assets/images/man.jpg" alt="" />
+              <transition name="slide-from-right">
+                <img src="../assets/images/man.jpg" alt="" v-if="showImage" />
+              </transition>
             </div>
           </div>
           <div class="photo woman-photo">
-            <img src="../assets/images/woman.jpg" alt="" />
+            <transition name="slide-from-top">
+              <img src="../assets/images/woman.jpg" alt="" v-if="showImage" />
+            </transition>
           </div>
         </div>
       </div>
@@ -38,12 +45,16 @@
   </div>
 </template>
 
-<script>
-export default {};
+<script setup>
+import { onMounted, ref } from 'vue'
+const showImage = ref(false)
+onMounted(() => {
+  showImage.value = true
+})
 </script>
 
 <style scoped>
-button{
+button {
   cursor: pointer;
 }
 .container {
@@ -66,7 +77,7 @@ button{
   border-radius: 8px;
   padding: 22px 24px 22px 24px;
   margin-top: 20px;
-  font-family: "Work Sans", sans-serif;
+  font-family: 'Work Sans', sans-serif;
   font-weight: 500;
   font-size: 18px;
   line-height: 21.11px;
@@ -84,14 +95,14 @@ button{
   gap: 10px;
   font-size: 64px;
   line-height: 64px;
-  font-family: "Sora", sans-serif;
+  font-family: 'Sora', sans-serif;
   font-weight: 700;
   color: #141414;
 }
 .text-left-container p {
   font-size: 20px;
   line-height: 28px;
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #000000bf;
 }
 .boxes {
@@ -167,6 +178,28 @@ button{
 .woman-photo {
   margin-left: 45px;
   border-radius: 8px;
+}
+.slide-from-left-enter-active {
+  transition: transform 0.8s ease-out;
+}
+.slide-from-left-enter {
+  transform: translateX(-100%);
+}
+
+/* Animation for image sliding from the right */
+.slide-from-right-enter-active {
+  transition: transform 0.8s ease-out;
+}
+.slide-from-right-enter {
+  transform: translateX(100%);
+}
+
+/* Animation for image sliding from the top */
+.slide-from-top-enter-active {
+  transition: transform 0.8s ease-out;
+}
+.slide-from-top-enter {
+  transform: translateY(-100%);
 }
 @media screen and (min-width: 100px) and (max-width: 1300px) {
   .container {
