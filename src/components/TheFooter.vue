@@ -23,7 +23,7 @@
       <div class="footer-widget">
         <h6>Menu</h6>
         <ul class="links">
-          <li><a href="#">Home</a></li>
+          <li><a href="/">Home</a></li>
           <li><a href="#">Converter</a></li>
           <li><a href="#">How it Works</a></li>
         </ul>
@@ -33,7 +33,7 @@
         <ul class="links">
           <li><a href="#">About</a></li>
           <li><a href="#">Contact Us</a></li>
-          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="https://genie-2025.netlify.app/">Privacy Policy</a></li>
         </ul>
       </div>
       <div class="footer-widget">
@@ -49,7 +49,7 @@
 </template>
 
 <script>
-export default {};
+export default {}
 </script>
 
 <style scoped>
@@ -72,7 +72,7 @@ footer {
   position: relative;
   width: 100%;
   height: auto;
- 
+
   padding-top: 80px;
   background-color: #120b48;
   /* background-color: #fff; */
@@ -107,14 +107,14 @@ footer {
   color: #fff;
   font-size: 20px;
   margin-top: 10px;
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 .wrapper .footer-widget h6 {
   color: #fff;
   margin: 10px 0 35px;
   font-size: 20px;
   font-weight: 600;
-  font-family: "Sora", sans-serif;
+  font-family: 'Sora', sans-serif;
 }
 .wrapper .footer-widget .links li {
   list-style: none;
@@ -126,7 +126,7 @@ footer {
   text-transform: capitalize;
   line-height: 32px;
   transition: all 0.3s ease-out;
-  font-family: "Work Sans", sans-serif;
+  font-family: 'Work Sans', sans-serif;
 }
 .wrapper .footer-widget .links li a:hover {
   color: #037ef3;
