@@ -53,7 +53,7 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@500&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@500&display=swap'); */
 * {
   box-sizing: border-box;
   margin: 8px;

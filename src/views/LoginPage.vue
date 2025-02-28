@@ -1,5 +1,8 @@
 <!-- LoginRegister.vue -->
 <template>
+  <div>
+    <navigation-bar></navigation-bar>
+  </div>
   <div class="hero">
     <div class="form-box">
       <div class="button-box">
@@ -26,7 +29,7 @@
           >
         </div>
 
-        <button type="submit" class="submit-btn">Log In</button>
+        <button type="submit" class="submit-btn" :disabled="!isLoginFormValid">Log In</button>
       </form>
       <form class="input-group" id="register" @submit.prevent="registerUser">
         <input
@@ -58,19 +61,20 @@
           v-model="registerPassword"
         />
         <div>
-          <input type="checkbox" class="check-box" /><span class="check-box-span"
+          <input type="checkbox" class="check-box" v-model="registerCheckbox" /><span
+            class="check-box-span"
             >I agree to terms & conditions</span
           >
         </div>
 
-        <button type="submit" class="submit-btn">Register</button>
+        <button type="submit" class="submit-btn" :disabled="!isRegisterFormValid">Register</button>
       </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useToast } from 'vue-toast-notification'
 import { auth, db } from '../firebase'
 import {
@@ -80,7 +84,7 @@ import {
 } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { useRouter } from 'vue-router'
-
+import NavigationBar from '@/components/NavigationBar.vue'
 const toast = useToast()
 const firstName = ref('')
 const lastName = ref('')
@@ -89,7 +93,8 @@ const registerPassword = ref('')
 const loginEmail = ref('')
 const loginPassword = ref('')
 const router = useRouter()
-// const error = ref('')
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const registerCheckbox = ref()
 
 let x = null
 let y = null
@@ -106,63 +111,126 @@ function login() {
   y.style.left = '450px'
   z.style.left = '0'
 }
+function showFirebaseError(error) {
+  let message = ''
+  switch (error.code) {
+    case 'auth/invalid-email':
+      message = 'Invalid email address. Please check and try again.'
+      break
+    case 'auth/email-already-in-use':
+      message = 'Email is already in use. Please use a different email address.'
+      break
+    case 'auth/weak-password':
+      message = 'Password is too weak. Please choose a stronger password.'
+      break
+    case 'auth/user-not-found':
+      message = 'No account found with this email. Please register first.'
+      break
+    case 'auth/wrong-password':
+      message = 'Incorrect password. Please try again.'
+      break
+    case 'auth/user-disabled':
+      message = 'This account has been disabled. Please contact support.'
+      break
+    default:
+      message = 'An unexpected error occurred. Please try again later.'
+  }
+  toast.error(message, { position: 'top-right' })
+}
+
+const isRegisterFormValid = computed(() => {
+  return (
+    firstName.value.trim() !== '' &&
+    lastName.value.trim() !== '' &&
+    registerEmail.value.trim() !== '' &&
+    registerPassword.value.trim() !== '' &&
+    registerCheckbox.value === true &&
+    emailRegex.test(registerEmail.value)
+  )
+})
 
 const registerUser = async () => {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      registerEmail.value,
-      registerPassword.value,
-    )
-    const user = userCredential.user
-    await setDoc(doc(db, 'users', user.uid), {
-      firstName: firstName.value,
-      lastName: lastName.value,
-      email: registerEmail.value,
-      createdAt: serverTimestamp(), // Use serverTimestamp for consistency
-      videos: [], // Initialize empty videos array
-    })
-    await sendEmailVerification(user)
-    toast.success('Registration successful! Please check your email for verification.', {
-      position: 'top-right',
-    })
-    login()
-  } catch (err) {
-    // console.error('Registration Error:', err)
-    // error.value = err.message
-    toast.error('Registration Error: ' + err.message, {
-      position: 'top-right',
-    })
+  if (!firstName.value.trim()) {
+    toast.error('First Name is required.')
+  }
+  if (!lastName.value.trim()) {
+    toast.error('Last Name is required.')
+  }
+  if (!registerEmail.value.trim()) {
+    toast.error('Email is required.')
+  } else if (!emailRegex.test(registerEmail.value)) {
+    toast.error('Please enter a valid email address.')
+  }
+  if (!registerPassword.value.trim()) {
+    toast.error('Password is required.')
+  }
+  if (!registerCheckbox.value) {
+    toast.error('Please agree to our terms and conditions.')
+  }
+  if (isRegisterFormValid.value) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        registerEmail.value,
+        registerPassword.value,
+      )
+      const user = userCredential.user
+      await setDoc(doc(db, 'users', user.uid), {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        email: registerEmail.value,
+        createdAt: serverTimestamp(),
+        videos: [], // Initialize empty videos array
+      })
+      await sendEmailVerification(user)
+      toast.success('Registration successful! Please check your email for verification.', {
+        position: 'top-right',
+      })
+      login()
+    } catch (err) {
+      showFirebaseError(err)
+    }
   }
 }
 
+const isLoginFormValid = computed(() => {
+  return (
+    loginEmail.value.trim() !== '' &&
+    loginPassword.value.trim() !== '' &&
+    emailRegex.test(loginEmail.value)
+  )
+})
+
 const loginUser = async () => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
-      loginEmail.value,
-      loginPassword.value,
-    )
-    const user = userCredential.user
+  if (!loginEmail.value.trim()) {
+    toast.error('Email is required.')
+  } else if (!emailRegex.test(loginEmail.value)) {
+    toast.error('Please enter a valid email address.')
+  }
+  if (!loginPassword.value.trim()) {
+    toast.error('Password is required.')
+  }
+  if (isLoginFormValid.value) {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        loginEmail.value,
+        loginPassword.value,
+      )
+      const user = userCredential.user
 
-    if (!user.emailVerified) {
-      // alert('Please verify your email before logging in.')
-      toast.error('Please verify your email before logging in.', {
-        position: 'top-right',
-      })
-      // Optionally, sign out the user
-      await auth.signOut()
-      return
+      if (!user.emailVerified) {
+        toast.error('Please verify your email before logging in.', {
+          position: 'top-right',
+        })
+        await auth.signOut()
+        return
+      }
+
+      router.push('/dashboard')
+    } catch (err) {
+      showFirebaseError(err)
     }
-
-    // Redirect to Home/Dashboard
-    router.push('/dashboard')
-  } catch (err) {
-    // console.error('Login Error:', err)
-    // error.value = err.message
-    toast.error('Login Error: ' + err.message, {
-      position: 'top-right',
-    })
   }
 }
 
@@ -170,11 +238,6 @@ onMounted(() => {
   x = document.getElementById('login')
   y = document.getElementById('register')
   z = document.getElementById('btn')
-  // toast.success('Please fill in both email and password!', {
-  //   position: 'top-right',
-  //   maxToasts: 3,
-  //   newestOnTop: true,
-  // })
 })
 </script>
 
@@ -182,7 +245,7 @@ onMounted(() => {
 * {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .hero {
   height: 100%;
@@ -195,7 +258,7 @@ onMounted(() => {
 }
 .form-box {
   width: 380px;
-  height: 480px;
+  height: 580px;
   position: relative;
   margin: 6% auto;
   background: #fff;
@@ -245,6 +308,7 @@ onMounted(() => {
   border-bottom: 1px solid #999;
   outline: none;
   background: transparent;
+  font-family: 'Poppins', sans-serif;
 }
 .submit-btn {
   width: 85%;
@@ -258,6 +322,12 @@ onMounted(() => {
   border: 0;
   outline: none;
   border-radius: 30px;
+}
+.submit-btn:disabled {
+  background-color: #ccc;
+  color: #666;
+  border: 1px solid #999;
+  cursor: not-allowed;
 }
 .check-box {
   margin: 30px 10px 30px 0;
@@ -300,7 +370,8 @@ onMounted(() => {
 }
 .forgot a {
   text-decoration: none;
-  color: red;
+  color: #1b233d;
+  text-decoration: underline;
 }
 .error-text {
   margin-top: 10px;

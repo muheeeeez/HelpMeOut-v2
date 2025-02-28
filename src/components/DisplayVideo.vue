@@ -247,6 +247,11 @@ defineExpose({
 </script>
 
 <style scoped>
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
 hr {
   border: none;
   border-top: 1px solid #dfe1e5;
@@ -281,6 +286,7 @@ hr {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  font-family: 'Poppins', sans-serif;
 }
 .card-video {
   width: 100%;
@@ -289,6 +295,7 @@ hr {
   margin-bottom: 12px;
   object-fit: cover;
   background: #000;
+  font-family: 'Poppins', sans-serif;
 }
 .video-info {
   width: 100%;
@@ -296,11 +303,13 @@ hr {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  font-family: 'Poppins', sans-serif;
 }
 .video-name {
   font-size: 20px;
   font-weight: 600;
   margin: 0 0 4px;
+  font-family: 'Poppins', sans-serif;
 }
 .uploaded-at {
   font-size: 14px;
@@ -324,6 +333,7 @@ hr {
   cursor: pointer;
   align-self: flex-end;
   transition: background-color 0.2s;
+  font-family: 'Poppins', sans-serif;
 }
 .delete-button:hover {
   background-color: #d32f2f;

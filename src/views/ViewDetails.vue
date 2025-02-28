@@ -271,6 +271,11 @@ const goBack = () => {
 </script>
 
 <style scoped>
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
 /* BASIC PAGE STYLES */
 .video-detail-page {
   background-color: #f5f5f7; /* match your other pages */

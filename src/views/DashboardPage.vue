@@ -62,7 +62,24 @@
       <section class="intro-section">
         <h2>Hello, {{ userData.firstName }} {{ userData.lastName }}</h2>
         <p>Here are your recorded videos.</p>
-        <button class="btn-primary" @click="openModal">Start Recording</button>
+        <div class="content">
+          <button class="btn-primary" @click="openModal">Start Recording</button>
+          <p>Or</p>
+          <div class="upload-container">
+            <label class="custom-file-upload">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path
+                  d="M288 109.3L288 352c0 17.7-14.3 32-32 32s-32-14.3-32-32l0-242.7-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3zM64 352l128 0c0 35.3 28.7 64 64 64s64-28.7 64-64l128 0c35.3 0 64 28.7 64 64l0 32c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64l0-32c0-35.3 28.7-64 64-64zM432 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"
+                />
+              </svg>
+              <input type="file" @change="handleFileChange" accept="video/*" />
+              Choose a file to Upload
+            </label>
+            <button @click="uploadVideos" :disabled="!selectedFile" class="upload-btn">
+              Upload Video
+            </button>
+          </div>
+        </div>
 
         <transition name="fade">
           <div v-if="showRecordModal" class="modal-overlay" @click.self="closeModal">
@@ -84,7 +101,7 @@
         </transition>
 
         <p v-if="isRecording" class="user-guidance">
-          You can stop recording using the browser's native controls.
+          Recording is in progress. You can stop recording using the browser's native controls.
         </p>
       </section>
 
@@ -98,14 +115,10 @@
         />
         <div class="video-container">
           <video class="video" ref="videoRef" controls></video>
-          <video ref="webcamRef" class="webcam-overlay video" autoplay></video>
         </div>
-
-        <!-- Search Input -->
       </section>
     </main>
 
-    <!-- Pass 'searchValue' to child as 'childValue' -->
     <section class="videos-list">
       <DisplayVideo :childValue="searchValue" ref="childRef" />
     </section>
@@ -132,18 +145,37 @@ const uploadProgress = ref(0)
 const uploadError = ref('')
 const uploadSuccess = ref(false)
 const videoRef = ref(null)
-const webcamRef = ref(null)
 let screenStream = null
-let webcamStream = null
 
+const selectedFile = ref(null)
 const router = useRouter()
 const toast = useToast()
 const showRecordModal = ref(false)
-
-// The search string we pass to the child
 const searchValue = ref('')
-
 const childRef = ref(null)
+function showFirebaseError(error) {
+  let message = ''
+  switch (error.code) {
+    case 'auth/invalid-email':
+      message = 'Invalid email address. Please check and try again.'
+      break
+    case 'auth/user-not-found':
+      message = 'No account found with this email.'
+      break
+    case 'auth/wrong-password':
+      message = 'Incorrect password. Please try again.'
+      break
+    case 'auth/weak-password':
+      message = 'Password is too weak. Please choose a stronger password.'
+      break
+    case 'auth/user-disabled':
+      message = 'This account has been disabled. Please contact support.'
+      break
+    default:
+      message = error.message || 'An unexpected error occurred. Please try again later.'
+  }
+  toast.error(message, { position: 'top-right' })
+}
 
 function menuView() {
   menuIsViewed.value = !menuIsViewed.value
@@ -159,8 +191,15 @@ function closeModal() {
 
 function handleSearch() {
   if (childRef.value) {
-    // This calls filterVideos() in the child
     childRef.value.filterVideos()
+  }
+}
+
+function handleFileChange(event) {
+  const file = event.target.files[0]
+  if (file) {
+    selectedFile.value = file
+    toast.info(`Selected file: ${file.name}`)
   }
 }
 
@@ -169,8 +208,53 @@ async function logout() {
     await auth.signOut()
     router.push('/login')
   } catch (err) {
-    toast.error('Logout failed: ' + err.message, { position: 'top-right' })
+    showFirebaseError(err)
   }
+}
+
+async function uploadVideos() {
+  if (!selectedFile.value) {
+    toast.error('No file selected!')
+    return
+  }
+  const file = selectedFile.value
+  const user = auth.currentUser
+  if (!user) {
+    toast.error('User not authenticated.', { position: 'top-right' })
+    return
+  }
+  const fileName = videoName.value || file.name || 'Recording'
+  const videoStoragePath = `videos/${user.uid}/${fileName}`
+  const videoStorageReference = storageRef(storage, videoStoragePath)
+
+  const uploadTask = uploadBytesResumable(videoStorageReference, file)
+  toast.info('Uploading your video, please wait...', { position: 'top-right' })
+
+  uploadTask.on(
+    'state_changed',
+    (snapshot) => {
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+      uploadProgress.value = Math.floor(progress)
+    },
+    (error) => {
+      uploadError.value = 'Upload failed: ' + error.message
+      showFirebaseError(error)
+      if (confirm('Upload failed. Would you like to download your video instead?')) {
+        downloadVideo(new Blob(recordedChunks.value, { type: 'video/webm' }))
+      }
+    },
+    async () => {
+      const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+      toast.success('Video uploaded successfully!', { position: 'top-right' })
+      const videosCollectionRef = collection(db, 'users', user.uid, 'videos')
+      await addDoc(videosCollectionRef, {
+        videoName: fileName,
+        downloadURL,
+        storagePath: videoStoragePath,
+        uploadedAt: serverTimestamp(),
+      })
+    }
+  )
 }
 
 async function startRecording() {
@@ -185,24 +269,9 @@ async function startRecording() {
         stopRecording()
       })
     })
-    webcamStream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 200, height: 150 },
-      audio: false,
-    })
-    webcamStream.getTracks().forEach((track) => {
-      track.addEventListener('ended', () => {
-        stopRecording()
-      })
-    })
-    if (webcamRef.value) {
-      webcamRef.value.srcObject = webcamStream
-    }
-    const combinedStream = new MediaStream([
-      ...screenStream.getTracks(),
-      ...webcamStream.getVideoTracks(),
-    ])
+
     recordedChunks.value = []
-    mediaRecorder.value = new MediaRecorder(combinedStream)
+    mediaRecorder.value = new MediaRecorder(screenStream)
 
     mediaRecorder.value.ondataavailable = (event) => {
       if (event.data.size > 0) {
@@ -213,7 +282,10 @@ async function startRecording() {
     mediaRecorder.value.onstop = () => {
       const blob = new Blob(recordedChunks.value, { type: 'video/webm' })
       videoUrl.value = URL.createObjectURL(blob)
-      videoRef.value.src = videoUrl.value
+      if (videoRef.value) {
+        videoRef.value.src = videoUrl.value
+      }
+      saveVideoLocally(blob)
       uploadVideo(blob)
     }
 
@@ -221,7 +293,7 @@ async function startRecording() {
     isRecording.value = true
     toast.success('Recording started!', { position: 'top-right' })
   } catch (err) {
-    toast.error('Error starting recording: ' + err.message, { position: 'top-right' })
+    showFirebaseError(err)
   }
 }
 
@@ -230,9 +302,28 @@ function stopRecording() {
     mediaRecorder.value.stop()
     isRecording.value = false
     screenStream?.getTracks().forEach((track) => track.stop())
-    webcamStream?.getTracks().forEach((track) => track.stop())
     toast.success('Recording stopped!', { position: 'top-right' })
   }
+}
+
+function saveVideoLocally(blob) {
+  const reader = new FileReader()
+  reader.onload = function (event) {
+    localStorage.setItem('unsavedVideo', event.target.result)
+    toast.info('Video backed up locally before uploading.', { position: 'top-right' })
+  }
+  reader.readAsDataURL(blob)
+}
+
+function downloadVideo(blob) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = (videoName.value || 'Recording') + '.webm'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 async function uploadVideo(blob) {
@@ -247,7 +338,9 @@ async function uploadVideo(blob) {
     const videoStoragePath = `videos/${user.uid}/${fileName}`
     const videoStorageReference = storageRef(storage, videoStoragePath)
     videoName.value = ''
+
     const uploadTask = uploadBytesResumable(videoStorageReference, blob)
+    toast.info('Uploading your video, please wait...', { position: 'top-right' })
 
     uploadTask.on(
       'state_changed',
@@ -257,31 +350,31 @@ async function uploadVideo(blob) {
       },
       (error) => {
         uploadError.value = 'Upload failed: ' + error.message
-        toast.error('Upload failed: ' + error.message, { position: 'top-right' })
-      },
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
-          videoUrl.value = downloadURL
-          const videosCollectionRef = collection(db, 'users', user.uid, 'videos')
-          await addDoc(videosCollectionRef, {
-            videoName: fileName,
-            downloadURL,
-            uploadedAt: serverTimestamp(),
-          })
-          uploadSuccess.value = true
-          uploadProgress.value = 0
-          uploadError.value = ''
-          toast.success('Video uploaded successfully!', { position: 'top-right' })
-        } catch (err) {
-          uploadError.value = 'Failed to update Firestore: ' + err.message
-          toast.error('Failed to update Firestore: ' + err.message, { position: 'top-right' })
+        showFirebaseError(error)
+        if (confirm('Upload failed. Would you like to download your video instead?')) {
+          downloadVideo(blob)
         }
       },
+      async () => {
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref)
+        videoUrl.value = downloadURL
+        const videosCollectionRef = collection(db, 'users', user.uid, 'videos')
+        await addDoc(videosCollectionRef, {
+          videoName: fileName,
+          downloadURL,
+          storagePath: videoStoragePath,
+          uploadedAt: serverTimestamp(),
+        })
+        uploadSuccess.value = true
+        uploadProgress.value = 0
+        uploadError.value = ''
+        toast.success('Video uploaded successfully!', { position: 'top-right' })
+        localStorage.removeItem('unsavedVideo')
+      }
     )
   } catch (err) {
     uploadError.value = 'An error occurred during upload: ' + err.message
-    toast.error('An error occurred: ' + err.message, { position: 'top-right' })
+    showFirebaseError(err)
   }
 }
 
@@ -298,8 +391,8 @@ onMounted(() => {
         }
       },
       (err) => {
-        toast.error('Failed to fetch user data: ' + err.message, { position: 'top-right' })
-      },
+        showFirebaseError(err)
+      }
     )
   } else {
     router.push('/login')
@@ -312,10 +405,43 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+svg {
+  width: 60px;
+  margin-right: 20px;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+input[type='file'] {
+  display: none;
+}
+.custom-file-upload {
+  display: flex;
+  align-items: center;
+  margin-right: 30px;
+  font-size: 18px;
+  color: #555;
+  font-family: "Poppins", sans-serif;
+}
 .dashboard-container {
-  /* background-color: #f5f5f7; */
   display: flex;
   flex-direction: column;
+}
+.content .btn-primary {
+  margin-top: 20px;
+}
+.content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+.content p {
+  text-align: center;
+  margin: auto 0;
+  padding: 0;
+  display: flex;
+  font-family: "Poppins", sans-serif;
 }
 .menu-bar {
   height: 70px;
@@ -342,6 +468,7 @@ onBeforeUnmount(() => {
   line-height: 1.2;
   color: #120b48;
   margin: 0;
+  font-family: "Poppins", sans-serif;
 }
 .logo {
   cursor: pointer;
@@ -364,6 +491,7 @@ onBeforeUnmount(() => {
   margin: 0;
   font-weight: 500;
   color: #333;
+  font-family: "Poppins", sans-serif;
 }
 .dropdown-menu {
   position: absolute;
@@ -388,6 +516,7 @@ onBeforeUnmount(() => {
   gap: 10px;
   padding: 8px 16px;
   transition: background-color 0.2s;
+  font-family: "Poppins", sans-serif;
 }
 .dropdown-menu ul li:hover {
   background-color: #f5f5f7;
@@ -395,6 +524,7 @@ onBeforeUnmount(() => {
 .dropdown-menu a {
   color: #000;
   text-decoration: none;
+  font-family: "Poppins", sans-serif;
 }
 .listing img {
   width: 20px;
@@ -425,11 +555,13 @@ onBeforeUnmount(() => {
   font-weight: 700;
   color: #141414;
   margin-bottom: 8px;
+  font-family: "Poppins", sans-serif;
 }
 .intro-section p {
   font-size: 18px;
   color: #555;
   margin-bottom: 16px;
+  font-family: "Poppins", sans-serif;
 }
 .user-guidance {
   margin-top: 10px;
@@ -443,6 +575,7 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: 6px;
   font-weight: 600;
+  font-family: "Poppins", sans-serif;
   transition: 0.2s;
 }
 .btn-primary {
@@ -450,6 +583,20 @@ onBeforeUnmount(() => {
   color: #fff;
 }
 .btn-primary:hover {
+  background-color: #0c0836;
+}
+.upload-btn {
+  cursor: pointer;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
+  transition: 0.2s;
+  background-color: #120b48;
+  color: #fff;
+}
+.upload-btn:hover {
   background-color: #0c0836;
 }
 .btn-secondary {
@@ -479,17 +626,6 @@ button[disabled] {
   border-radius: 8px;
   display: none;
   background: #000;
-}
-.webcam-overlay {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 180px;
-  height: 120px;
-  border: 2px solid #fff;
-  border-radius: 6px;
-  background: black;
-  z-index: 10;
 }
 .search-bar {
   flex: 1;
@@ -530,6 +666,7 @@ button[disabled] {
   margin: 0 0 12px;
   font-size: 20px;
   color: #120b48;
+  font-family: "Poppins", sans-serif;
 }
 .modal label {
   display: block;
@@ -544,6 +681,7 @@ button[disabled] {
   margin-bottom: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-family: "Poppins", sans-serif;
 }
 .modal-actions {
   display: flex;
@@ -566,5 +704,10 @@ button[disabled] {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+.upload-container {
+  display: flex;
+  margin-top: 20px;
+  align-items: center;
 }
 </style>

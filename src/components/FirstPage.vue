@@ -8,7 +8,7 @@
           on a website
         </p>
       </div>
-      <button>Install HelpMeOut &rarr;</button>
+      <button @click="installApp()">Install HelpMeOut &rarr;</button>
     </div>
     <div class="boxes-photo">
       <div class="photo-container">
@@ -47,10 +47,36 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
+const deferredPrompt = ref(null)
 const showImage = ref(false)
 onMounted(() => {
   showImage.value = true
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the default install prompt
+    e.preventDefault()
+    // Save the event so we can trigger it later
+    deferredPrompt.value = e
+    console.log('beforeinstallprompt event captured.')
+  })
 })
+function installApp() {
+  if (deferredPrompt.value) {
+    // Trigger the install prompt
+    deferredPrompt.value.prompt()
+    // Wait for the user's response to the prompt
+    deferredPrompt.value.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt')
+      } else {
+        console.log('User dismissed the install prompt')
+      }
+      // Clear the saved prompt since it can only be used once
+      deferredPrompt.value = null
+    })
+  } else {
+    console.log('Installation prompt is not available')
+  }
+}
 </script>
 
 <style scoped>
