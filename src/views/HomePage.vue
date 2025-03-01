@@ -15,9 +15,6 @@
     <div>
       <the-footer></the-footer>
     </div>
-    <!-- <div>
-      <login-page></login-page>
-    </div> -->
   </div>
 </template>
 <script>

@@ -182,7 +182,7 @@ const registerUser = async () => {
         lastName: lastName.value,
         email: registerEmail.value,
         createdAt: serverTimestamp(),
-        videos: [], // Initialize empty videos array
+        videos: [],
       })
       await sendEmailVerification(user)
       toast.success('Registration successful! Please check your email for verification.', {
@@ -256,11 +256,6 @@ onMounted(async () => {
 .hero {
   height: 100%;
   width: 100%;
-  /* background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-    url(../assets/images/woman.jpg); */
-  /* background-position: center;
-  background-size: cover; */
-  /* position: absolute; */
 }
 .form-box {
   width: 380px;
@@ -285,7 +280,6 @@ onMounted(async () => {
   border: 0;
   outline: none;
   position: relative;
-  /* color: #fff; */
 }
 #btn {
   top: 0;

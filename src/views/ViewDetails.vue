@@ -1,7 +1,5 @@
-<!-- src/components/VideoDetail.vue -->
 <template>
   <div class="video-detail-page">
-    <!-- Top Navigation -->
     <header class="menu-bar">
       <div class="top-logo" @click="() => router.push('/')">
         <svg
@@ -12,14 +10,11 @@
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <!-- Your Logo Paths -->
           <path d="M31.1401 16.8421C30.5804 14.9122 29.5621 13.1464..." fill="#100A42" />
           <path d="M20.0841 28.7495C21.811 28.7329 23.4944..." fill="white" />
         </svg>
         <h1>HelpMeOut</h1>
       </div>
-
-      <!-- Profile & Dropdown -->
       <div class="profile-bar">
         <li>
           <div class="profile" @click="menuView">
@@ -56,22 +51,14 @@
         </li>
       </div>
     </header>
-
-    <!-- Video Detail Section -->
     <div class="video-detail-container" v-if="video && !isLoading">
-      <!-- Breadcrumb-like Heading -->
       <h3 class="breadcrumb">
         Home / <span>{{ video.videoName }}</span>
       </h3>
-
       <h1 class="video-name">{{ video.videoName }}</h1>
-
-      <!-- Video Player -->
       <div class="videos-grid">
         <video controls :src="video.downloadURL" type="video/webm" class="card-video" />
       </div>
-
-      <!-- Transcript & Language Selection -->
       <p class="transcript">Transcript</p>
       <select id="language" disabled>
         <option value="english">English</option>
@@ -79,8 +66,6 @@
         <option value="spain">Spanish</option>
         <option value="arabic">Arabic</option>
       </select>
-
-      <!-- Sharing & Email -->
       <div class="send">
         <div class="send-item">
           <input type="text" placeholder="Enter email of receiver" v-model="recieverEmail" />
@@ -95,8 +80,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Social Sharing -->
       <div class="share">
         <p>Share your video</p>
         <div class="share-button">
@@ -119,13 +102,9 @@
 
       <button @click="goBack" class="btn-secondary back-button">Back to List</button>
     </div>
-
-    <!-- Loading State -->
     <div v-else-if="isLoading" class="loading">
       <p>Loading video details...</p>
     </div>
-
-    <!-- Error State -->
     <div v-else class="error">
       <p>{{ error }}</p>
       <button @click="goBack" class="btn-primary back-button">Back to List</button>
@@ -141,11 +120,8 @@ import { doc, getDoc, onSnapshot } from 'firebase/firestore'
 import { getDownloadURL, ref as storageRef } from 'firebase/storage'
 import { useToast } from 'vue-toast-notification'
 import { useAuthStore } from '../stores/auth'
-
-/* Reactive refs */
 const menuIsViewed = ref(false)
 const userData = ref({})
-// const uploadError = ref('')
 let unsubscribeUserData = null
 const VideoCopyUrl = ref('')
 const mailtoLink = ref('')
@@ -172,8 +148,6 @@ const logout = async () => {
     toast.error('Logout failed: ' + err.message, { position: 'top-right' })
   }
 }
-
-/* Format Firestore Timestamps */
 const formatDate = (timestamp) => {
   if (timestamp && typeof timestamp.toDate === 'function') {
     const date = timestamp.toDate()
@@ -196,8 +170,6 @@ const copyToClipboard = async () => {
     toast.error('Copy Error: ' + err.message, { position: 'top-right' })
   }
 }
-
-/* Load Video Details */
 const fetchVideoDetails = async () => {
   if (!authStore.user) {
     toast.error('User not authenticated.', { position: 'top-right' })
@@ -219,7 +191,6 @@ const fetchVideoDetails = async () => {
       if (videoSnap.exists()) {
         const videoData = videoSnap.data()
         video.value = { id: videoSnap.id, ...videoData }
-        // Ensure the downloadURL is up to date
         video.value.downloadURL = await getDownloadURL(storageRef(storage, video.value.downloadURL))
         VideoCopyUrl.value = video.value.downloadURL
       } else {
@@ -257,8 +228,6 @@ const prepareEmail = () => {
   mailtoLink.value = `mailto:${recieverEmail.value}?subject=Video%20from%20${userData.value.firstName}&body=Here%20is%20the%20video%20link:%20${VideoCopyUrl.value}`
   recieverEmail.value = ''
 }
-
-/* Compose share messages */
 const message = ref(`Video from ${userData.value.firstName}: ${VideoCopyUrl.value}`)
 whatsappUrl.value = `https://wa.me/?text=${encodeURIComponent(message.value)}`
 telegramUrl.value = `https://t.me/share/url?url=${encodeURIComponent(VideoCopyUrl.value)}&text=${encodeURIComponent(
@@ -274,17 +243,14 @@ const goBack = () => {
 * {
   margin: 0;
   padding: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
-/* BASIC PAGE STYLES */
 .video-detail-page {
   background-color: #f5f5f7; /* match your other pages */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-
-/* HEADER / MENU BAR */
 .menu-bar {
   height: 70px;
   width: 100%;
@@ -298,25 +264,21 @@ const goBack = () => {
   top: 0;
   z-index: 1000;
 }
-
 .top-logo {
   display: flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
 }
-
 .top-logo h1 {
   font-size: 24px;
   font-weight: 700;
   color: #120b48;
   margin: 0;
 }
-
 .logo {
   cursor: pointer;
 }
-
 .profile-bar {
   display: flex;
   align-items: center;
@@ -324,14 +286,12 @@ const goBack = () => {
   padding: 0;
   list-style-type: none;
 }
-
 .profile {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
 }
-
 .profile p {
   font-size: 16px;
   margin: 0;
@@ -339,7 +299,6 @@ const goBack = () => {
   color: #333;
 }
 
-/* DROPDOWN MENU */
 .dropdown-menu {
   position: absolute;
   top: 70px;
@@ -366,15 +325,13 @@ const goBack = () => {
   padding: 8px 16px;
   transition: background-color 0.2s;
 }
-.dropdown-menu a{
+.dropdown-menu a {
   color: #000;
   text-decoration: none;
 }
 .dropdown-menu ul li:hover {
   background-color: #f5f5f7;
 }
-
-/* SIMPLE FADE-IN ANIMATION FOR DROPDOWN */
 @keyframes fadeInDown {
   0% {
     opacity: 0;
@@ -386,13 +343,10 @@ const goBack = () => {
   }
 }
 
-/* VIDEO DETAIL CONTAINER */
 .video-detail-container {
   padding: 30px 5%;
   flex: 1;
 }
-
-/* BREADCRUMB */
 .breadcrumb {
   margin-bottom: 8px;
   font-size: 18px;
@@ -403,8 +357,6 @@ const goBack = () => {
   font-weight: 600;
   color: #141414;
 }
-
-/* VIDEO NAME */
 .video-name {
   margin-top: 0;
   font-size: 28px;
@@ -412,8 +364,6 @@ const goBack = () => {
   color: #141414;
   margin-bottom: 16px;
 }
-
-/* VIDEO PLAYER */
 .videos-grid {
   margin-bottom: 24px;
 }
@@ -426,8 +376,6 @@ const goBack = () => {
   background-color: #000;
   outline: none;
 }
-
-/* TRANSCRIPT & SELECT */
 .transcript {
   font-size: 18px;
   font-weight: 500;
@@ -443,21 +391,17 @@ select {
   border-radius: 4px;
   border: 1px solid #ccc;
 }
-
-/* SEND SECTION */
 .send {
   display: flex;
   flex-wrap: wrap;
   gap: 40px;
   margin-bottom: 24px;
 }
-
 .send-item {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .send-item input[type='text'] {
   width: 300px;
   height: 40px;
@@ -466,24 +410,19 @@ select {
   border-radius: 4px;
   padding: 0 8px;
 }
-
-/* SHARE SECTION */
 .share {
   margin-bottom: 16px;
 }
-
 .share p {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 10px;
 }
-
 .share-button {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
 }
-
 .share-button .btn-tertiary {
   display: flex;
   align-items: center;
@@ -494,29 +433,21 @@ select {
   border: none;
   cursor: pointer;
 }
-
 .share-button .btn-tertiary:hover {
   background-color: #e2e2e2;
 }
-
 .share-button a {
-  color: inherit; /* Inherit button text color */
+  color: inherit;
   text-decoration: none;
 }
-
-/* UPLOAD DATE */
 .upload-date {
   font-size: 14px;
   color: #666;
   margin-bottom: 16px;
 }
-
-/* BACK BUTTON */
 .back-button {
   margin-top: 16px;
 }
-
-/* GENERAL BUTTONS */
 .btn-primary,
 .btn-secondary {
   cursor: pointer;
@@ -545,7 +476,6 @@ select {
   background-color: #c9c9c9;
 }
 
-/* LOADING & ERROR STATES */
 .loading,
 .error {
   text-align: center;

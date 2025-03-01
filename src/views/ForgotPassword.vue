@@ -31,8 +31,6 @@ import NavigationBar from '@/components/NavigationBar.vue'
 const email = ref('')
 const router = useRouter()
 const toast = useToast()
-
-// Helper function to interpret Firebase error codes.
 function showFirebaseError(error) {
   let message = ''
   switch (error.code) {
