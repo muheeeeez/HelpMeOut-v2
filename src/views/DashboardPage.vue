@@ -34,22 +34,22 @@
               <ul>
                 <li class="listing">
                   <img src="../assets/images/setting-2.png" alt="settings" />
-                  <router-link>Settings and Privacy</router-link>
+                  <a>Settings and Privacy</a>
                   <img src="../assets/images/arrow-right.png" alt="arrow-right" />
                 </li>
                 <li class="listing">
                   <img src="../assets/images/moon.png" alt="moon" />
-                  <router-link>Display and Accessibility</router-link>
+                  <a>Display and Accessibility</a>
                   <img src="../assets/images/arrow-right.png" alt="arrow-right" />
                 </li>
                 <li class="listing">
                   <img src="../assets/images/message-question.png" alt="help" />
-                  <router-link>Help and Support</router-link>
+                  <a>Help and Support</a>
                   <img src="../assets/images/arrow-right.png" alt="arrow-right" />
                 </li>
                 <li class="listing" @click="logout">
                   <img src="../assets/images/logout.png" alt="logout" />
-                  <router-link>Logout</router-link>
+                  <a>Logout</a>
                 </li>
               </ul>
             </div>
@@ -253,7 +253,7 @@ async function uploadVideos() {
         storagePath: videoStoragePath,
         uploadedAt: serverTimestamp(),
       })
-    }
+    },
   )
 }
 
@@ -370,7 +370,7 @@ async function uploadVideo(blob) {
         uploadError.value = ''
         toast.success('Video uploaded successfully!', { position: 'top-right' })
         localStorage.removeItem('unsavedVideo')
-      }
+      },
     )
   } catch (err) {
     uploadError.value = 'An error occurred during upload: ' + err.message
@@ -392,7 +392,7 @@ onMounted(() => {
       },
       (err) => {
         showFirebaseError(err)
-      }
+      },
     )
   } else {
     router.push('/login')
@@ -421,7 +421,7 @@ input[type='file'] {
   margin-right: 30px;
   font-size: 18px;
   color: #555;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .dashboard-container {
   display: flex;
@@ -441,7 +441,7 @@ input[type='file'] {
   margin: auto 0;
   padding: 0;
   display: flex;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .menu-bar {
   height: 70px;
@@ -468,7 +468,7 @@ input[type='file'] {
   line-height: 1.2;
   color: #120b48;
   margin: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .logo {
   cursor: pointer;
@@ -491,7 +491,7 @@ input[type='file'] {
   margin: 0;
   font-weight: 500;
   color: #333;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .dropdown-menu {
   position: absolute;
@@ -516,7 +516,7 @@ input[type='file'] {
   gap: 10px;
   padding: 8px 16px;
   transition: background-color 0.2s;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .dropdown-menu ul li:hover {
   background-color: #f5f5f7;
@@ -524,7 +524,7 @@ input[type='file'] {
 .dropdown-menu a {
   color: #000;
   text-decoration: none;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .listing img {
   width: 20px;
@@ -555,13 +555,13 @@ input[type='file'] {
   font-weight: 700;
   color: #141414;
   margin-bottom: 8px;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .intro-section p {
   font-size: 18px;
   color: #555;
   margin-bottom: 16px;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .user-guidance {
   margin-top: 10px;
@@ -575,7 +575,7 @@ input[type='file'] {
   border: none;
   border-radius: 6px;
   font-weight: 600;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
   transition: 0.2s;
 }
 .btn-primary {
@@ -591,7 +591,7 @@ input[type='file'] {
   border: none;
   border-radius: 6px;
   font-weight: 600;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
   transition: 0.2s;
   background-color: #120b48;
   color: #fff;
@@ -666,7 +666,7 @@ button[disabled] {
   margin: 0 0 12px;
   font-size: 20px;
   color: #120b48;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .modal label {
   display: block;
@@ -681,7 +681,7 @@ button[disabled] {
   margin-bottom: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 .modal-actions {
   display: flex;
