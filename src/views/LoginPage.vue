@@ -85,7 +85,9 @@ import {
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { useRouter } from 'vue-router'
 import NavigationBar from '@/components/NavigationBar.vue'
+import { useAuthStore } from '@/stores/auth'
 const toast = useToast()
+const authStore = useAuthStore()
 const firstName = ref('')
 const lastName = ref('')
 const registerEmail = ref('')
@@ -234,7 +236,11 @@ const loginUser = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await authStore.initializeAuth()
+  if (authStore.user) {
+    router.push('/dashboard')
+  }
   x = document.getElementById('login')
   y = document.getElementById('register')
   z = document.getElementById('btn')
