@@ -82,7 +82,6 @@ const formattedDurations = ref([])
 const videoRefs = ref([])
 let unsubscribeVideos = null
 
-// Convert the parent's prop into a computed, so we can rely on reactivity
 const searchQuery = computed(() => props.childValue)
 
 onMounted(() => {
@@ -254,45 +253,89 @@ defineExpose({
 }
 hr {
   border: none;
-  border-top: 1px solid #dfe1e5;
-  margin-bottom: 20px;
+  border-top: 1px solid #e0e3eb;
+  margin-bottom: 30px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0.6;
 }
 .video-list-container {
   padding: 0 5%;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 .loading,
 .error,
 .no-videos {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  padding: 30px;
   color: #555;
   font-size: 18px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+.loading {
+  position: relative;
+  padding-top: 50px;
+}
+.loading:before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e0e3eb;
+  border-top-color: #120b48;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: translateX(-50%) rotate(360deg); }
+}
+.error {
+  border-left: 4px solid #e74c3c;
+  color: #e74c3c;
+}
+.no-videos {
+  border-left: 4px solid #3498db;
+  color: #555;
 }
 .videos-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 30px;
   margin-top: 20px;
+  margin-bottom: 40px;
 }
 .video-item {
-  width: 550px;
-  border: 1px solid #b6b3c6;
+  width: 100%;
+  border: none;
   border-radius: 16px;
-  background-color: #f8fafc;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 16px;
+  background-color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  padding: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   font-family: 'Poppins', sans-serif;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.video-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 .card-video {
   width: 100%;
   height: 300px;
-  border-radius: 10px;
-  margin-bottom: 12px;
+  border-radius: 0;
+  margin-bottom: 0;
   object-fit: cover;
   background: #000;
   font-family: 'Poppins', sans-serif;
@@ -302,40 +345,79 @@ hr {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  padding: 20px;
+  background-color: #fff;
   font-family: 'Poppins', sans-serif;
 }
 .video-name {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  margin: 0 0 4px;
+  margin: 0 0 8px;
+  color: #333;
   font-family: 'Poppins', sans-serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .uploaded-at {
   font-size: 14px;
   color: #888;
   margin: 0;
+  display: flex;
+  align-items: center;
+}
+.uploaded-at:before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #120b48;
+  border-radius: 50%;
+  margin-right: 8px;
 }
 .info,
 .more {
   cursor: pointer;
   width: 24px;
   height: 24px;
+  padding: 5px;
+  border-radius: 50%;
+  background-color: #f8f9fc;
+  transition: all 0.2s;
+  margin-left: 8px;
+}
+.info:hover,
+.more:hover {
+  background-color: #e9ecf1;
+  transform: scale(1.1);
 }
 .delete-button {
-  margin-top: auto;
-  padding: 8px 12px;
+  width: 100%;
+  margin-top: 0;
+  padding: 12px;
   border: none;
-  border-radius: 6px;
-  background-color: #f44336;
-  color: #fff;
+  border-radius: 0;
+  background-color: #fff;
+  color: #e74c3c;
   font-weight: 600;
   cursor: pointer;
-  align-self: flex-end;
-  transition: background-color 0.2s;
+  transition: all 0.3s;
   font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  border-top: 1px solid #f1f3f9;
 }
 .delete-button:hover {
-  background-color: #d32f2f;
+  background-color: #fceeee;
+}
+
+@media (max-width: 768px) {
+  .videos-grid {
+    grid-template-columns: 1fr;
+  }
+  .video-item {
+    width: 100%;
+  }
 }
 </style>

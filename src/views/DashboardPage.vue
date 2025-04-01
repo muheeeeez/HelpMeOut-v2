@@ -1,127 +1,177 @@
 <template>
   <div class="dashboard-container">
-    <header class="menu-bar">
-      <div class="top-logo" @click="() => router.push('/')">
-        <svg
-          class="logo"
-          width="40"
-          height="40"
-          viewBox="0 0 40 40"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M31.1401 16.8421C30.5804 14.9122 29.5621 13.1464 28.1721 11.6953C26.7821 10.2442 25.0617 9.15092 23.1577 8.50876C21.2766 7.96121 19.2993 7.82666 17.3614 8.11432C15.4234 8.40199 13.5705 9.10507 11.9296 10.1754C11.7946 10.3107 11.6252 10.4067 11.4398 10.4531C11.2544 10.4994 11.0598 10.4944 10.877 10.4386C10.5084 10.3192 10.1763 10.1079 9.91205 9.82455C9.71967 9.47744 9.65746 9.07308 9.73661 8.68419C9.78687 8.49754 9.87514 8.32327 9.9959 8.17233C10.1167 8.02138 10.2673 7.89701 10.4384 7.807C15.0875 5.0877 19.6489 4.38595 24.0349 5.78946C26.1942 6.50768 28.1656 7.69964 29.8047 9.27811C31.4439 10.8566 32.7094 12.7816 33.5085 14.9123H39.3857C38.184 10.1719 35.2871 6.0361 31.2427 3.28683C27.1983 0.537565 22.2868 -0.634627 17.4368 -0.00811872C12.5868 0.618389 8.13434 3.00017 4.92135 6.68692C1.70837 10.3737 -0.0425069 15.1098 -0.000228394 20C-0.000228394 20.7895 0.0874909 21.4912 0.0874909 22.2807H7.54363C7.82839 22.2645 8.11069 22.3414 8.34801 22.4996C8.58532 22.6578 8.76481 22.8888 8.85942 23.1579C9.43235 25.0811 10.4553 26.8402 11.8434 28.2894C13.2316 29.7385 14.945 30.8361 16.8419 31.4912C18.723 32.0388 20.7002 32.1733 22.6382 31.8856C24.5761 31.598 26.429 30.8949 28.0699 29.8245C28.205 29.6892 28.3743 29.5933 28.5597 29.5469C28.7452 29.5005 28.9398 29.5055 29.1226 29.5614C29.4911 29.6808 29.8232 29.8921 30.0875 30.1754C30.2799 30.5225 30.3421 30.9269 30.2629 31.3158C30.2127 31.5024 30.1244 31.6767 30.0036 31.8276C29.8829 31.9786 29.7323 32.103 29.5612 32.193C26.917 33.9722 23.8008 34.9192 20.6138 34.9123C19.0386 34.9004 17.4732 34.6641 15.9647 34.2105C13.7963 33.5094 11.8162 32.3235 10.1747 30.7428C8.53315 29.162 7.27338 27.2281 6.491 25.0877H0.701526C1.96964 29.7501 4.88277 33.7958 8.90243 36.477C12.9221 39.1582 17.7765 40.2935 22.5683 39.6731C27.3601 39.0527 31.7653 36.7186 34.9696 33.1022C38.174 29.4858 39.9608 24.8316 39.9998 20C40.0161 19.2679 39.9868 18.5355 39.9121 17.807H32.5436C32.2445 17.7872 31.9563 17.6872 31.7093 17.5174C31.4623 17.3476 31.2657 17.1143 31.1401 16.8421Z"
-            fill="#100A42"
-          />
-          <path
-            d="M20.0841 28.7495C21.811 28.7329 23.4944 28.2056 24.9222 27.2341C26.3501 26.2626 27.4585 24.8903 28.1078 23.2901C28.7572 21.6898 28.9185 19.9332 28.5715 18.2414C28.2244 16.5497 27.3845 14.9985 26.1575 13.7832C24.9305 12.5679 23.3713 11.7428 21.6763 11.412C19.9813 11.0811 18.2263 11.2592 16.6324 11.9239C15.0384 12.5886 13.6768 13.71 12.719 15.1471C11.7612 16.5841 11.2501 18.2725 11.25 19.9995C11.2499 21.1557 11.479 22.3004 11.924 23.3675C12.369 24.4346 13.021 25.403 13.8425 26.2166C14.6639 27.0302 15.6385 27.673 16.7098 28.1077C17.7811 28.5425 18.928 28.7606 20.0841 28.7495Z"
-            fill="white"
-          />
-        </svg>
-        <h1>HelpMeOut</h1>
-      </div>
-
-      <div class="profile-bar">
-        <li>
-          <div class="profile" @click="menuView">
-            <img src="../assets/images/profile-circle.png" alt="profile" />
-            <p>{{ userData.firstName }} {{ userData.lastName }}</p>
-            <img src="../assets/images/arrow-down.png" alt="arrow-down" />
+    <header class="dashboard-header">
+      <div class="header-content">
+        <div class="logo-container" @click="() => router.push('/')">
+          <svg
+            class="logo"
+            width="40"
+            height="40"
+            viewBox="0 0 40 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M31.1401 16.8421C30.5804 14.9122 29.5621 13.1464 28.1721 11.6953C26.7821 10.2442 25.0617 9.15092 23.1577 8.50876C21.2766 7.96121 19.2993 7.82666 17.3614 8.11432C15.4234 8.40199 13.5705 9.10507 11.9296 10.1754C11.7946 10.3107 11.6252 10.4067 11.4398 10.4531C11.2544 10.4994 11.0598 10.4944 10.877 10.4386C10.5084 10.3192 10.1763 10.1079 9.91205 9.82455C9.71967 9.47744 9.65746 9.07308 9.73661 8.68419C9.78687 8.49754 9.87514 8.32327 9.9959 8.17233C10.1167 8.02138 10.2673 7.89701 10.4384 7.807C15.0875 5.0877 19.6489 4.38595 24.0349 5.78946C26.1942 6.50768 28.1656 7.69964 29.8047 9.27811C31.4439 10.8566 32.7094 12.7816 33.5085 14.9123H39.3857C38.184 10.1719 35.2871 6.0361 31.2427 3.28683C27.1983 0.537565 22.2868 -0.634627 17.4368 -0.00811872C12.5868 0.618389 8.13434 3.00017 4.92135 6.68692C1.70837 10.3737 -0.0425069 15.1098 -0.000228394 20C-0.000228394 20.7895 0.0874909 21.4912 0.0874909 22.2807H7.54363C7.82839 22.2645 8.11069 22.3414 8.34801 22.4996C8.58532 22.6578 8.76481 22.8888 8.85942 23.1579C9.43235 25.0811 10.4553 26.8402 11.8434 28.2894C13.2316 29.7385 14.945 30.8361 16.8419 31.4912C18.723 32.0388 20.7002 32.1733 22.6382 31.8856C24.5761 31.598 26.429 30.8949 28.0699 29.8245C28.205 29.6892 28.3743 29.5933 28.5597 29.5469C28.7452 29.5005 28.9398 29.5055 29.1226 29.5614C29.4911 29.6808 29.8232 29.8921 30.0875 30.1754C30.2799 30.5225 30.3421 30.9269 30.2629 31.3158C30.2127 31.5024 30.1244 31.6767 30.0036 31.8276C29.8829 31.9786 29.7323 32.103 29.5612 32.193C26.917 33.9722 23.8008 34.9192 20.6138 34.9123C19.0386 34.9004 17.4732 34.6641 15.9647 34.2105C13.7963 33.5094 11.8162 32.3235 10.1747 30.7428C8.53315 29.162 7.27338 27.2281 6.491 25.0877H0.701526C1.96964 29.7501 4.88277 33.7958 8.90243 36.477C12.9221 39.1582 17.7765 40.2935 22.5683 39.6731C27.3601 39.0527 31.7653 36.7186 34.9696 33.1022C38.174 29.4858 39.9608 24.8316 39.9998 20C40.0161 19.2679 39.9868 18.5355 39.9121 17.807H32.5436C32.2445 17.7872 31.9563 17.6872 31.7093 17.5174C31.4623 17.3476 31.2657 17.1143 31.1401 16.8421Z"
+              fill="#100A42"
+            />
+            <path
+              d="M20.0841 28.7495C21.811 28.7329 23.4944 28.2056 24.9222 27.2341C26.3501 26.2626 27.4585 24.8903 28.1078 23.2901C28.7572 21.6898 28.9185 19.9332 28.5715 18.2414C28.2244 16.5497 27.3845 14.9985 26.1575 13.7832C24.9305 12.5679 23.3713 11.7428 21.6763 11.412C19.9813 11.0811 18.2263 11.2592 16.6324 11.9239C15.0384 12.5886 13.6768 13.71 12.719 15.1471C11.7612 16.5841 11.2501 18.2725 11.25 19.9995C11.2499 21.1557 11.479 22.3004 11.924 23.3675C12.369 24.4346 13.021 25.403 13.8425 26.2166C14.6639 27.0302 15.6385 27.673 16.7098 28.1077C17.7811 28.5425 18.928 28.7606 20.0841 28.7495Z"
+              fill="white"
+            />
+          </svg>
+          <h1>HelpMeOut</h1>
+        </div>
+        
+        <div class="profile-section" @click="toggleProfileMenu">
+          <div class="profile-info">
+            <font-awesome-icon :icon="['fas', 'user-circle']" class="avatar-icon" />
+            <span>{{ userData.firstName }} {{ userData.lastName }}</span>
+            <font-awesome-icon :icon="['fas', 'chevron-down']" class="dropdown-icon" :class="{ 'rotate': profileMenuOpen }" />
           </div>
-          <transition name="dropdown">
-            <div class="dropdown-menu" v-if="menuIsViewed">
-              <ul>
-                <li class="listing">
-                  <img src="../assets/images/setting-2.png" alt="settings" />
-                  <a>Settings and Privacy</a>
-                  <img src="../assets/images/arrow-right.png" alt="arrow-right" />
-                </li>
-                <li class="listing">
-                  <img src="../assets/images/moon.png" alt="moon" />
-                  <a>Display and Accessibility</a>
-                  <img src="../assets/images/arrow-right.png" alt="arrow-right" />
-                </li>
-                <li class="listing">
-                  <img src="../assets/images/message-question.png" alt="help" />
-                  <a>Help and Support</a>
-                  <img src="../assets/images/arrow-right.png" alt="arrow-right" />
-                </li>
-                <li class="listing" @click="logout">
-                  <img src="../assets/images/logout.png" alt="logout" />
-                  <a>Logout</a>
-                </li>
-              </ul>
+          
+          <div class="profile-dropdown" v-if="profileMenuOpen">
+            <div class="dropdown-item">
+              <font-awesome-icon :icon="['fas', 'cog']" />
+              <span>Settings</span>
             </div>
-          </transition>
-        </li>
+            <div class="dropdown-item">
+              <font-awesome-icon :icon="['fas', 'question-circle']" />
+              <span>Help & Support</span>
+            </div>
+            <div class="dropdown-item" @click="logout">
+              <font-awesome-icon :icon="['fas', 'sign-out-alt']" />
+              <span>Logout</span>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
 
-    <main class="main-content">
-      <section class="intro-section">
-        <h2>Hello, {{ userData.firstName }} {{ userData.lastName }}</h2>
-        <p>Here are your recorded videos.</p>
-        <div class="content">
-          <button class="btn-primary" @click="openModal">Start Recording</button>
-          <p>Or</p>
-          <div class="upload-container">
-            <label class="custom-file-upload">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path
-                  d="M288 109.3L288 352c0 17.7-14.3 32-32 32s-32-14.3-32-32l0-242.7-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3zM64 352l128 0c0 35.3 28.7 64 64 64s64-28.7 64-64l128 0c35.3 0 64 28.7 64 64l0 32c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64l0-32c0-35.3 28.7-64 64-64zM432 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"
-                />
-              </svg>
+    <div class="dashboard-main">
+      <div class="dashboard-welcome">
+        <div class="welcome-text">
+          <h2>
+            <font-awesome-icon :icon="['fas', 'user-circle']" />
+            Welcome, {{ userData.firstName }} {{ userData.lastName }}
+          </h2>
+          <p>
+            <font-awesome-icon :icon="['fas', 'film']" />
+            Here are your recorded videos
+          </p>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn-primary" @click="openModal">
+            <font-awesome-icon :icon="['fas', 'video']" />
+            Start Recording
+          </button>
+          
+          <div class="divider">Or</div>
+          
+          <div class="upload-section">
+            <label class="file-upload-label">
+              <font-awesome-icon :icon="['fas', 'upload']" />
               <input type="file" @change="handleFileChange" accept="video/*" />
-              Choose a file to Upload
+              <span>Choose a file to upload</span>
             </label>
-            <button @click="uploadVideos" :disabled="!selectedFile" class="upload-btn">
+            
+            <button 
+              @click="uploadVideos" 
+              :disabled="!selectedFile" 
+              class="btn-secondary"
+              :class="{ 'btn-disabled': !selectedFile }"
+            >
+              <font-awesome-icon :icon="['fas', 'cloud-upload-alt']" />
               Upload Video
             </button>
           </div>
         </div>
+      </div>
 
-        <transition name="fade">
-          <div v-if="showRecordModal" class="modal-overlay" @click.self="closeModal">
-            <div class="modal">
-              <h2>Record a New Video</h2>
-              <label for="videoTitle">Enter a title for your video:</label>
+      <div class="search-section">
+        <div class="search-container">
+          <font-awesome-icon :icon="['fas', 'search']" class="search-icon" />
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search for a particular video"
+            v-model="searchValue"
+            @keyup.enter="handleSearch"
+          />
+        </div>
+      </div>
+
+      <div class="video-content">
+        <div class="recent-files">
+          <h3>
+            <font-awesome-icon :icon="['fas', 'clock']" />
+            Recent Files
+          </h3>
+        </div>
+        
+        <div class="video-preview">
+          <video class="video" ref="videoRef" controls></video>
+        </div>
+        
+        <div class="video-list-wrapper">
+          <DisplayVideo 
+            ref="videoDisplay" 
+            :childValue="searchValue"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for recording -->
+    <transition name="fade">
+      <div v-if="showRecordModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-container">
+          <div class="modal-header">
+            <h2>
+              <font-awesome-icon :icon="['fas', 'video']" />
+              Record a New Video
+            </h2>
+            <button class="modal-close" @click="closeModal">
+              <font-awesome-icon :icon="['fas', 'times']" />
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="videoTitle">Enter a title for your video</label>
               <input
                 id="videoTitle"
                 v-model="videoName"
                 type="text"
-                placeholder="e.g. My Awesome Recording"
+                placeholder="e.g. Product Demonstration"
+                class="modal-input"
               />
-              <div class="modal-actions">
-                <button class="btn-primary" @click="startRecording">Confirm</button>
-                <button class="btn-secondary" @click="closeModal">Cancel</button>
-              </div>
+            </div>
+            
+            <div class="modal-actions">
+              <button class="btn-primary" @click="startRecording">
+                <font-awesome-icon :icon="['fas', 'check-circle']" />
+                Confirm
+              </button>
+              <button class="btn-secondary" @click="closeModal">
+                <font-awesome-icon :icon="['fas', 'times-circle']" />
+                Cancel
+              </button>
             </div>
           </div>
-        </transition>
-
-        <p v-if="isRecording" class="user-guidance">
-          Recording is in progress. You can stop recording using the browser's native controls.
-        </p>
-      </section>
-
-      <section class="video-section">
-        <input
-          type="text"
-          class="search-bar"
-          placeholder="Search for a particular video"
-          v-model="searchValue"
-          @keyup.enter="handleSearch"
-        />
-        <div class="video-container">
-          <video class="video" ref="videoRef" controls></video>
         </div>
-      </section>
-    </main>
+      </div>
+    </transition>
 
-    <section class="videos-list">
-      <DisplayVideo :childValue="searchValue" ref="childRef" />
-    </section>
+    <!-- Recording notification -->
+    <div v-if="isRecording" class="recording-notification">
+      <div class="recording-indicator">
+        <font-awesome-icon :icon="['fas', 'circle']" class="recording-icon pulse" />
+        <span>Recording is in progress</span>
+      </div>
+      <p>You can stop recording using the browser's native controls</p>
+    </div>
   </div>
 </template>
 
@@ -153,6 +203,8 @@ const toast = useToast()
 const showRecordModal = ref(false)
 const searchValue = ref('')
 const childRef = ref(null)
+const profileMenuOpen = ref(false)
+
 function showFirebaseError(error) {
   let message = ''
   switch (error.code) {
@@ -189,9 +241,15 @@ function closeModal() {
   showRecordModal.value = false
 }
 
+function toggleProfileMenu() {
+  profileMenuOpen.value = !profileMenuOpen.value
+}
+
+const videoDisplay = ref(null)
+
 function handleSearch() {
-  if (childRef.value) {
-    childRef.value.filterVideos()
+  if (videoDisplay.value) {
+    videoDisplay.value.filterVideos()
   }
 }
 
@@ -405,309 +463,576 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-svg {
-  width: 60px;
-  margin-right: 20px;
-  display: inline-block;
-  padding: 6px 12px;
-  cursor: pointer;
+:root {
+  --color-primary: #100A42;
+  --color-secondary: #424b6e;
+  --color-accent: #120B48;
+  --color-text: #333333;
+  --color-text-light: #6c757d;
+  --color-background: #f8f9fa;
+  --color-white: #ffffff;
+  --color-grey: #e0e0e0;
+  --color-light-grey: #f2f4f8;
+  --color-danger: #e74c3c;
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
-input[type='file'] {
-  display: none;
-}
-.custom-file-upload {
-  display: flex;
-  align-items: center;
-  margin-right: 30px;
-  font-size: 18px;
-  color: #555;
-  font-family: 'Poppins', sans-serif;
-}
-.dashboard-container {
-  display: flex;
-  flex-direction: column;
-}
-.content .btn-primary {
-  margin-top: 20px;
-}
-.content {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  text-align: center;
-}
-.content p {
-  text-align: center;
-  margin: auto 0;
+
+* {
+  margin: 0;
   padding: 0;
-  display: flex;
-  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
 }
-.menu-bar {
-  height: 70px;
-  width: 100%;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 5%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  color: var(--color-text);
+  font-family: var(--font-family);
+}
+
+/* Header styles */
+.dashboard-header {
+  background-color: white;
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 0;
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 100;
 }
-.top-logo {
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.75rem;
   cursor: pointer;
+  transition: transform 0.3s ease;
 }
-.top-logo h1 {
-  font-size: 24px;
+
+.logo-container:hover {
+  transform: scale(1.05);
+}
+
+.logo-container h1 {
+  font-size: 1.5rem;
+  color: var(--color-primary);
   font-weight: 700;
-  line-height: 1.2;
-  color: #120b48;
   margin: 0;
-  font-family: 'Poppins', sans-serif;
 }
-.logo {
-  cursor: pointer;
+
+/* Profile styles */
+.profile-section {
+  position: relative;
 }
-.profile-bar {
+
+.profile-info {
   display: flex;
   align-items: center;
-  gap: 25px;
-  padding: 0;
-  list-style-type: none;
-}
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
-.profile p {
-  font-size: 16px;
-  margin: 0;
-  font-weight: 500;
-  color: #333;
-  font-family: 'Poppins', sans-serif;
+
+.profile-info:hover {
+  background-color: var(--color-light-grey);
 }
-.dropdown-menu {
+
+.avatar-icon {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+}
+
+.dropdown-icon {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  transition: transform 0.3s ease;
+}
+
+.dropdown-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.profile-dropdown {
   position: absolute;
-  top: 70px;
-  right: 5%;
-  background-color: #ffffff;
-  border: 1px solid #e2e2e2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  width: 240px;
-  animation: fadeInDown 0.25s ease forwards;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  width: 200px;
   overflow: hidden;
+  z-index: 10;
+  animation: fadeIn 0.2s ease-out;
 }
-.dropdown-menu ul {
-  margin: 0;
-  padding: 10px 0;
-  list-style: none;
-}
-.dropdown-menu ul li {
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  transition: background-color 0.2s;
-  font-family: 'Poppins', sans-serif;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
-.dropdown-menu ul li:hover {
-  background-color: #f5f5f7;
+
+.dropdown-item:hover {
+  background-color: var(--color-light-grey);
 }
-.dropdown-menu a {
-  color: #000;
-  text-decoration: none;
-  font-family: 'Poppins', sans-serif;
+
+.dropdown-item svg {
+  color: var(--color-primary);
 }
-.listing img {
-  width: 20px;
-  height: 20px;
+
+/* Main content styles */
+.dashboard-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
 }
-@keyframes fadeInDown {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.main-content {
-  flex: 1;
+
+.dashboard-welcome {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 30px;
-  padding: 40px 5%;
+  gap: 2rem;
 }
-.intro-section {
-  margin-bottom: 10px;
-}
-.intro-section h2 {
-  font-size: 28px;
+
+.welcome-text h2 {
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #141414;
-  margin-bottom: 8px;
-  font-family: 'Poppins', sans-serif;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
-.intro-section p {
-  font-size: 18px;
-  color: #555;
-  margin-bottom: 16px;
-  font-family: 'Poppins', sans-serif;
+
+.welcome-text h2 svg,
+.welcome-text p svg {
+  color: var(--color-primary);
 }
-.user-guidance {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #666;
+
+.welcome-text p {
+  font-size: 1.1rem;
+  color: var(--color-text-light);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
-.btn-primary,
-.btn-secondary {
-  cursor: pointer;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-family: 'Poppins', sans-serif;
-  transition: 0.2s;
-}
-.btn-primary {
-  background-color: #120b48;
-  color: #fff;
-}
-.btn-primary:hover {
-  background-color: #0c0836;
-}
-.upload-btn {
-  cursor: pointer;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-family: 'Poppins', sans-serif;
-  transition: 0.2s;
-  background-color: #120b48;
-  color: #fff;
-}
-.upload-btn:hover {
-  background-color: #0c0836;
-}
-.btn-secondary {
-  background-color: #e0e0e0;
-  color: #000;
-}
-.btn-secondary:hover {
-  background-color: #c9c9c9;
-}
-button[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.video-section {
+
+.action-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  align-items: flex-start;
+  align-items: center;
+  gap: 1.5rem;
 }
-.video-container {
+
+.divider {
+  color: var(--color-text-light);
+  font-weight: 500;
+}
+
+.upload-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  flex: 1;
+}
+
+.file-upload-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px dashed var(--color-grey);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.file-upload-label:hover {
+  border-color: var(--color-primary);
+  background-color: rgba(18, 11, 72, 0.05);
+}
+
+.file-upload-label input {
+  display: none;
+}
+
+.file-upload-label svg {
+  color: var(--color-primary);
+  font-size: 1.2rem;
+}
+
+/* Search styles */
+.search-section {
+  margin-bottom: 2rem;
+}
+
+.search-container {
   position: relative;
-  width: 500px;
-  max-width: 100%;
+  max-width: 500px;
 }
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-light);
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid var(--color-grey);
+  border-radius: var(--radius-md);
+  background-color: white;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(18, 11, 72, 0.1);
+}
+
+/* Video content styles */
+.video-content {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.recent-files {
+  margin-bottom: 1.5rem;
+}
+
+.recent-files h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recent-files h3 svg {
+  color: var(--color-primary);
+}
+
+.video-preview {
+  margin-bottom: 2rem;
+}
+
 .video {
   width: 100%;
-  border-radius: 8px;
+  max-height: 400px;
+  border-radius: var(--radius-md);
+  background-color: black;
   display: none;
-  background: #000;
 }
-.search-bar {
-  flex: 1;
-  max-width: 350px;
-  height: 44px;
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
-}
-.search-bar::placeholder {
-  color: #999;
-}
-.videos-list {
-  margin-top: 0px;
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+
+/* Button styles */
+.btn-primary,
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+  color:black;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 9999;
+  gap: 0.75rem;
+  border: none;
+  font-family: var(--font-family);
 }
-.modal {
-  background-color: #fff;
-  padding: 24px;
-  border-radius: 8px;
-  width: 320px;
-  max-width: 90%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+.btn-primary {
+  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+
+  box-shadow: 0 4px 15px rgba(18, 11, 72, 0.2);
 }
-.modal h2 {
-  margin: 0 0 12px;
-  font-size: 20px;
-  color: #120b48;
-  font-family: 'Poppins', sans-serif;
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(18, 11, 72, 0.3);
 }
-.modal label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #333;
+
+.btn-secondary {
+  background-color: var(--color-light-grey);
+  color: var(--color-text);
 }
-.modal input[type='text'] {
-  display: block;
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: 'Poppins', sans-serif;
+
+.btn-secondary:hover {
+  background-color: #e9ecf1;
+  transform: translateY(-2px);
 }
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+
+.btn-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
+
+.btn-disabled:hover {
+  transform: none;
+}
+
+/* Modal styles */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
 }
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.2s;
-}
-.dropdown-enter,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-.upload-container {
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  margin-top: 20px;
+  justify-content: center;
   align-items: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  width: 500px;
+  max-width: 95%;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: zoomIn 0.3s ease-out;
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-grey);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-header h2 svg {
+  color: var(--color-primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--color-danger);
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.modal-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-grey);
+  border-radius: var(--radius-md);
+  background-color: #f9f9f9;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(18, 11, 72, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* Recording notification */
+.recording-notification {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  background-color: white;
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  box-shadow: var(--shadow-md);
+  z-index: 900;
+  max-width: 300px;
+  animation: slideIn 0.3s ease-out;
+  border-left: 4px solid #e74c3c;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.recording-icon {
+  color: #e74c3c;
+}
+
+.recording-notification p {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+.pulse {
+  animation: pulse 1.5s infinite;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 1rem;
+  }
+  
+  .dashboard-main {
+    padding: 1.5rem 1rem;
+  }
+  
+  .dashboard-welcome {
+    padding: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .divider {
+    align-self: center;
+    margin: 0.5rem 0;
+  }
+  
+  .upload-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .file-upload-label {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .video-content {
+    padding: 1.5rem;
+  }
 }
 </style>

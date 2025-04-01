@@ -53,13 +53,13 @@
     </header>
     <div class="video-detail-container" v-if="video && !isLoading">
       <h3 class="breadcrumb">
-        Home / <span>{{ video.videoName }}</span>
+        <font-awesome-icon :icon="['fas', 'home']" /> Home / <span><font-awesome-icon :icon="['fas', 'video']" /> {{ video.videoName }}</span>
       </h3>
-      <h1 class="video-name">{{ video.videoName }}</h1>
+      <h1 class="video-name"><font-awesome-icon :icon="['fas', 'file-video']" /> {{ video.videoName }}</h1>
       <div class="videos-grid">
         <video controls :src="video.downloadURL" type="video/webm" class="card-video" />
       </div>
-      <p class="transcript">Transcript</p>
+      <p class="transcript"><font-awesome-icon :icon="['fas', 'closed-captioning']" /> Transcript</p>
       <select id="language" disabled>
         <option value="english">English</option>
         <option value="french">French</option>
@@ -68,46 +68,57 @@
       </select>
       <div class="send">
         <div class="send-item">
-          <input type="text" placeholder="Enter email of receiver" v-model="recieverEmail" />
+          <div class="input-container">
+            <font-awesome-icon :icon="['fas', 'envelope']" class="input-icon" />
+            <input type="text" placeholder="Enter email of receiver" v-model="recieverEmail" />
+          </div>
           <button class="btn-primary" @click="prepareEmail">
-            <a :href="mailtoLink">Send</a>
+            <font-awesome-icon :icon="['fas', 'paper-plane']" /> <a :href="mailtoLink">Send</a>
           </button>
         </div>
         <div class="send-item">
-          <input type="text" disabled :value="VideoCopyUrl" />
+          <div class="input-container">
+            <font-awesome-icon :icon="['fas', 'link']" class="input-icon" />
+            <input type="text" disabled :value="VideoCopyUrl" />
+          </div>
           <button class="btn-secondary" @click="copyToClipboard">
-            <img src="../assets/images/copy.png" alt="copy" /> Copy URL
+            <font-awesome-icon :icon="['fas', 'copy']" /> Copy URL
           </button>
         </div>
       </div>
       <div class="share">
-        <p>Share your video</p>
+        <p><font-awesome-icon :icon="['fas', 'share-alt']" /> Share your video</p>
         <div class="share-button">
           <button class="btn-tertiary">
-            <img src="../assets/images/Facebook.png" alt="facebook" />
-            Facebook
+            <font-awesome-icon :icon="['fab', 'facebook-f']" /> Facebook
           </button>
           <button class="btn-tertiary">
-            <img src="../assets/images/Whatsapp.png" alt="whatsapp" />
+            <font-awesome-icon :icon="['fab', 'whatsapp']" />
             <a :href="whatsappUrl" target="_blank">WhatsApp</a>
           </button>
           <button class="btn-tertiary">
-            <img src="../assets/images/Telegram.png" alt="telegram" />
+            <font-awesome-icon :icon="['fab', 'telegram-plane']" />
             <a :href="telegramUrl" target="_blank">Telegram</a>
           </button>
         </div>
       </div>
 
-      <p class="upload-date">Uploaded At: {{ formatDate(video.uploadedAt) }}</p>
+      <p class="upload-date"><font-awesome-icon :icon="['fas', 'calendar-alt']" /> Uploaded At: {{ formatDate(video.uploadedAt) }}</p>
 
-      <button @click="goBack" class="btn-secondary back-button">Back to List</button>
+      <button @click="goBack" class="btn-secondary back-button">
+        <font-awesome-icon :icon="['fas', 'arrow-left']" /> Back to List
+      </button>
     </div>
     <div v-else-if="isLoading" class="loading">
+      <font-awesome-icon :icon="['fas', 'spinner']" class="loading-icon fa-pulse" />
       <p>Loading video details...</p>
     </div>
     <div v-else class="error">
+      <font-awesome-icon :icon="['fas', 'exclamation-triangle']" class="error-icon" />
       <p>{{ error }}</p>
-      <button @click="goBack" class="btn-primary back-button">Back to List</button>
+      <button @click="goBack" class="btn-primary back-button">
+        <font-awesome-icon :icon="['fas', 'arrow-left']" /> Back to List
+      </button>
     </div>
   </div>
 </template>
@@ -246,7 +257,7 @@ const goBack = () => {
   font-family: 'Poppins', sans-serif;
 }
 .video-detail-page {
-  background-color: #f5f5f7; /* match your other pages */
+  background-color: #f5f7fa;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -259,7 +270,7 @@ const goBack = () => {
   align-items: center;
   justify-content: space-between;
   padding: 0 5%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -269,6 +280,10 @@ const goBack = () => {
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.top-logo:hover {
+  transform: scale(1.05);
 }
 .top-logo h1 {
   font-size: 24px;
@@ -289,8 +304,14 @@ const goBack = () => {
 .profile {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 30px;
+  transition: background-color 0.3s;
+}
+.profile:hover {
+  background-color: #f5f5f7;
 }
 .profile p {
   font-size: 16px;
@@ -305,9 +326,9 @@ const goBack = () => {
   right: 5%;
   background-color: #ffffff;
   border: 1px solid #e2e2e2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  width: 240px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  width: 260px;
   overflow: hidden;
   animation: fadeInDown 0.25s ease forwards;
 }
@@ -321,13 +342,17 @@ const goBack = () => {
 .dropdown-menu ul li {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
+  gap: 12px;
+  padding: 12px 20px;
   transition: background-color 0.2s;
+  cursor: pointer;
 }
 .dropdown-menu a {
+  flex: 1;
   color: #000;
   text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
 }
 .dropdown-menu ul li:hover {
   background-color: #f5f5f7;
@@ -344,13 +369,23 @@ const goBack = () => {
 }
 
 .video-detail-container {
-  padding: 30px 5%;
+  padding: 40px 5%;
   flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .breadcrumb {
-  margin-bottom: 8px;
-  font-size: 18px;
-  color: rgba(20, 20, 20, 0.7);
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: rgba(20, 20, 20, 0.6);
 }
 
 .breadcrumb span {
@@ -359,82 +394,125 @@ const goBack = () => {
 }
 .video-name {
   margin-top: 0;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: #141414;
-  margin-bottom: 16px;
-}
-.videos-grid {
   margin-bottom: 24px;
+  position: relative;
+  display: inline-block;
+}
+
+.video-name::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(to right, #120b48, #424b6e);
+  border-radius: 3px;
+}
+
+.videos-grid {
+  margin-bottom: 30px;
 }
 
 .card-video {
   width: 100%;
   max-width: 1000px;
   height: auto;
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: #000;
   outline: none;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 .transcript {
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 600;
   color: #000;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 select {
-  width: 120px;
-  height: 32px;
-  margin-bottom: 24px;
-  padding: 4px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  width: 140px;
+  height: 40px;
+  margin-bottom: 30px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background-color: #f8f9fc;
+  font-family: 'Poppins', sans-serif;
+  color: #555;
+  transition: border-color 0.3s;
 }
+
+select:focus {
+  outline: none;
+  border-color: #120b48;
+}
+
 .send {
   display: flex;
   flex-wrap: wrap;
   gap: 40px;
-  margin-bottom: 24px;
+  margin-bottom: 40px;
 }
 .send-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
+.input-container {
+  position: relative;
+  width: 100%;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+}
+
 .send-item input[type='text'] {
-  width: 300px;
-  height: 40px;
-  border: 1px solid #ccc;
-  background-color: #fafafa;
-  border-radius: 4px;
-  padding: 0 8px;
+  padding-left: 45px;
 }
+
 .share {
-  margin-bottom: 16px;
+  margin-bottom: 30px;
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
 .share p {
   font-size: 18px;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  color: #120b48;
 }
 .share-button {
   display: flex;
-  gap: 12px;
+  gap: 15px;
   flex-wrap: wrap;
 }
 .share-button .btn-tertiary {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background-color: #f0f0f0;
-  padding: 8px 12px;
-  border-radius: 6px;
+  gap: 8px;
+  background-color: #f5f7fa;
+  padding: 10px 16px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
 }
 .share-button .btn-tertiary:hover {
-  background-color: #e2e2e2;
+  background-color: #e9ecf1;
+  transform: translateY(-2px);
 }
 .share-button a {
   color: inherit;
@@ -443,47 +521,178 @@ select {
 .upload-date {
   font-size: 14px;
   color: #666;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #f2f4f8;
+  border-radius: 20px;
 }
 .back-button {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 .btn-primary,
 .btn-secondary {
   cursor: pointer;
-  padding: 8px 14px;
-  border-radius: 6px;
+  padding: 12px 20px;
+  border-radius: 8px;
   font-weight: 600;
-  transition: 0.2s;
+  transition: all 0.3s ease;
   border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
 }
 
 .btn-primary {
-  background-color: #120b48;
+  background: linear-gradient(to right, #120b48, #424b6e);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(18, 11, 72, 0.2);
 }
 .btn-primary:hover {
-  background-color: #0c0836;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(18, 11, 72, 0.25);
 }
 .btn-primary a {
   text-decoration: none;
   color: #fff;
 }
 .btn-secondary {
-  background-color: #e0e0e0;
-  color: #000;
+  background-color: #e9ecef;
+  color: #343a40;
 }
 .btn-secondary:hover {
-  background-color: #c9c9c9;
+  background-color: #dee2e6;
+  transform: translateY(-2px);
 }
 
 .loading,
 .error {
   text-align: center;
-  padding: 50px;
+  padding: 80px 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  margin: 40px auto;
+  max-width: 500px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.loading p {
+  color: #120b48;
+  font-size: 18px;
+  position: relative;
+  padding-bottom: 40px;
+}
+
+.loading p::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e0e3eb;
+  border-top-color: #120b48;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translateX(-50%);
+}
+
+@keyframes spin {
+  to { transform: translateX(-50%) rotate(360deg); }
 }
 
 .error p {
-  color: red;
-  margin-bottom: 20px;
+  color: #e74c3c;
+  margin-bottom: 25px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .video-detail-container {
+    padding: 30px 15px;
+  }
+  
+  .send {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .send-item {
+    width: 100%;
+  }
+  
+  .send-item input[type='text'] {
+    width: 100%;
+  }
+  
+  .video-name {
+    font-size: 26px;
+  }
+  
+  .share-button {
+    gap: 10px;
+  }
+  
+  .btn-primary, .btn-secondary {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+.loading-icon {
+  font-size: 2rem;
+  color: #120b48;
+  margin-bottom: 15px;
+}
+
+.error-icon {
+  font-size: 2rem;
+  color: #e74c3c;
+  margin-bottom: 15px;
+}
+
+.loading {
+  text-align: center;
+  padding: 80px 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  margin: 40px auto;
+  max-width: 500px;
+  animation: fadeIn 0.4s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading p {
+  color: #120b48;
+  font-size: 18px;
+}
+
+.error {
+  text-align: center;
+  padding: 80px 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  margin: 40px auto;
+  max-width: 500px;
+  animation: fadeIn 0.4s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.breadcrumb i, .video-name i, .transcript i, .share p i, .upload-date i {
+  margin-right: 8px;
+  color: #120b48;
+}
+
+.btn-primary i, .btn-secondary i, .btn-tertiary i {
+  margin-right: 8px;
 }
 </style>

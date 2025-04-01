@@ -15,23 +15,16 @@
     <div>
       <the-footer></the-footer>
     </div>
+    <scroll-to-top></scroll-to-top>
   </div>
 </template>
-<script>
+<script setup>
 import FeaturesPage from '../components/FeaturesPage.vue'
 import FirstPage from '../components/FirstPage.vue'
 import HowItWorksPage from '../components/HowItWorksPage.vue'
 import NavigationBar from '../components/NavigationBar.vue'
 import TheFooter from '../components/TheFooter.vue'
-export default {
-  components: {
-    NavigationBar,
-    FirstPage,
-    FeaturesPage,
-    HowItWorksPage,
-    TheFooter,
-  },
-}
+import ScrollToTop from '../components/ScrollToTop.vue'
 </script>
 
 <style>
