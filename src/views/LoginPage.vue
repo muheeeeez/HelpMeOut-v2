@@ -104,7 +104,7 @@
               />
               <label for="remember">Remember me</label>
             </div>
-            <a @click="() => router.push('/forgot-pasword')" class="forgot-link">
+            <a @click="() => router.push('/forgot-password')" class="forgot-link">
               Forgot Password?
             </a>
           </div>
