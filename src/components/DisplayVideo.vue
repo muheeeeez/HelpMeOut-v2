@@ -56,7 +56,7 @@ import {
   computed,
   defineExpose,
 } from 'vue'
-import { collection, query, orderBy, onSnapshot, deleteDoc, doc } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { deleteObject, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toast-notification'
@@ -195,10 +195,56 @@ function formatTime(seconds) {
 
 async function copyToClipboard(video) {
   try {
-    await navigator.clipboard.writeText(video.downloadURL)
-    toast.info('Copied to clipboard')
+    // Check if the video already has a shortened URL stored
+    if (video.shortUrl) {
+      await navigator.clipboard.writeText(video.shortUrl);
+      toast.success('Shortened URL copied to clipboard!', { position: 'top-right' });
+      return;
+    }
+    
+    // Use TinyURL's API which doesn't have CORS issues
+    const tinyUrlApi = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(video.downloadURL)}`;
+    
+    // Fetch the shortened URL
+    const response = await fetch(tinyUrlApi);
+    
+    if (!response.ok) {
+      throw new Error(`TinyURL API error: ${response.status}`);
+    }
+    
+    const shortUrl = await response.text();
+    
+    if (shortUrl) {
+      // Save the shortened URL to Firebase
+      try {
+        const user = authStore.user;
+        if (user) {
+          const videoDocRef = doc(db, 'users', user.uid, 'videos', video.id);
+          await updateDoc(videoDocRef, {
+            shortUrl: shortUrl
+          });
+          console.log('Shortened URL saved to Firebase');
+        }
+      } catch (err) {
+        console.error('Error saving shortened URL:', err);
+      }
+      
+      await navigator.clipboard.writeText(shortUrl);
+      toast.success('Shortened URL copied to clipboard!', { position: 'top-right' });
+    } else {
+      throw new Error('Failed to get shortened URL');
+    }
   } catch (err) {
-    toast.error('Copy Error ' + err.message, { position: 'top-right' })
+    console.error('URL shortening error:', err);
+    toast.error('URL shortening failed, copying original URL', { position: 'top-right' });
+    
+    // Fallback to copying the original URL
+    try {
+      await navigator.clipboard.writeText(video.downloadURL);
+      toast.info('Original URL copied to clipboard', { position: 'top-right' });
+    } catch (clipErr) {
+      toast.error('Copy failed: ' + clipErr.message, { position: 'top-right' });
+    }
   }
 }
 

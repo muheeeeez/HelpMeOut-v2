@@ -59,31 +59,101 @@
       <div class="videos-grid">
         <video controls :src="video.downloadURL" type="video/webm" class="card-video" />
       </div>
-      <p class="transcript"><font-awesome-icon :icon="['fas', 'closed-captioning']" /> Transcript</p>
-      <select id="language" disabled>
-        <option value="english">English</option>
-        <option value="french">French</option>
-        <option value="spain">Spanish</option>
-        <option value="arabic">Arabic</option>
-      </select>
+      <div class="transcript-section">
+        <div class="transcript-header">
+          <p class="transcript"><font-awesome-icon :icon="['fas', 'closed-captioning']" /> Transcript</p>
+          <div class="transcript-controls">
+            <select v-model="selectedLanguage" id="language" :disabled="isTranscribing">
+              <option value="en">English</option>
+              <option value="fr">French</option>
+              <option value="es">Spanish</option>
+              <option value="de">German</option>
+              <option value="it">Italian</option>
+              <option value="pt">Portuguese</option>
+              <option value="nl">Dutch</option>
+            </select>
+            
+            <button 
+              class="btn-primary transcript-btn" 
+              @click="generateTranscript" 
+              :disabled="isTranscribing"
+              v-if="!transcriptionText && !isTranscribing"
+            >
+              <font-awesome-icon :icon="['fas', 'closed-captioning']" /> 
+              Generate Transcript
+            </button>
+            
+            <button 
+              class="btn-secondary transcript-btn" 
+              @click="regenerateTranscript" 
+              :disabled="isTranscribing"
+              v-if="transcriptionText && !isTranscribing"
+            >
+              <font-awesome-icon :icon="['fas', 'sync']" /> 
+              Regenerate
+            </button>
+          </div>
+        </div>
+        
+        <div class="transcript-content">
+          <div v-if="isTranscribing" class="transcript-loading">
+            <font-awesome-icon :icon="['fas', 'spinner']" class="fa-spin" />
+            <p>Generating transcript... This may take a few minutes.</p>
+          </div>
+          
+          <div v-else-if="transcriptionError" class="transcript-error">
+            <font-awesome-icon :icon="['fas', 'exclamation-circle']" />
+            <p>{{ transcriptionError }}</p>
+          </div>
+          
+          <div v-else-if="transcriptionText" class="transcript-text">
+            <p>{{ transcriptionText }}</p>
+          </div>
+          
+          <div v-else class="transcript-empty">
+            <font-awesome-icon :icon="['fas', 'file-alt']" />
+            <p>No transcript available. Click the button above to generate one.</p>
+          </div>
+        </div>
+      </div>
       <div class="send">
         <div class="send-item">
+          <h4 class="section-title">
+            <font-awesome-icon :icon="['fas', 'envelope']" />
+            Share via Email
+          </h4>
           <div class="input-container">
-            <font-awesome-icon :icon="['fas', 'envelope']" class="input-icon" />
-            <input type="text" placeholder="Enter email of receiver" v-model="recieverEmail" />
+            <input 
+              type="email" 
+              placeholder="Enter email of receiver" 
+              v-model="recieverEmail" 
+              class="styled-input email-input"
+            />
+            <button class="btn-primary email-button" @click="prepareEmail">
+              <font-awesome-icon :icon="['fas', 'paper-plane']" /> 
+              <a :href="mailtoLink">Send</a>
+            </button>
           </div>
-          <button class="btn-primary" @click="prepareEmail">
-            <font-awesome-icon :icon="['fas', 'paper-plane']" /> <a :href="mailtoLink">Send</a>
-          </button>
         </div>
+        
         <div class="send-item">
-          <div class="input-container">
-            <font-awesome-icon :icon="['fas', 'link']" class="input-icon" />
-            <input type="text" disabled :value="VideoCopyUrl" />
+          <h4 class="section-title">
+            <font-awesome-icon :icon="['fas', 'link']" />
+            Video Link
+          </h4>
+          <div class="input-container url-container">
+            <input 
+              type="text" 
+              readonly 
+              :value="VideoCopyUrl" 
+              class="styled-input url-input"
+              ref="urlInput"
+            />
+            <button class="btn-secondary copy-button" @click="copyToClipboard">
+              <font-awesome-icon :icon="['fas', 'copy']" /> 
+              Copy
+            </button>
           </div>
-          <button class="btn-secondary" @click="copyToClipboard">
-            <font-awesome-icon :icon="['fas', 'copy']" /> Copy URL
-          </button>
         </div>
       </div>
       <div class="share">
@@ -124,16 +194,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { auth, db, storage } from '../firebase'
-import { doc, getDoc, onSnapshot } from 'firebase/firestore'
+import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore'
 import { getDownloadURL, ref as storageRef } from 'firebase/storage'
 import { useToast } from 'vue-toast-notification'
 import { useAuthStore } from '../stores/auth'
+import { config } from '../config'
+import { AssemblyAI } from 'assemblyai'
+
 const menuIsViewed = ref(false)
 const userData = ref({})
 let unsubscribeUserData = null
+// Holds the shortened URL
 const VideoCopyUrl = ref('')
 const mailtoLink = ref('')
 const route = useRoute()
@@ -146,11 +220,24 @@ const isLoading = ref(true)
 const error = ref('')
 const whatsappUrl = ref('')
 const telegramUrl = ref('')
+const message = ref('')
+const urlInput = ref(null)
 
+// Transcription related states
+const transcriptionText = ref('')
+const isTranscribing = ref(false)
+const selectedLanguage = ref('en')
+const transcriptionError = ref('')
+
+// Get AssemblyAI API key from config
+const ASSEMBLY_API_KEY = config.ASSEMBLY_API_KEY
+
+// Toggle menu view
 function menuView() {
   menuIsViewed.value = !menuIsViewed.value
 }
 
+// Logout function
 const logout = async () => {
   try {
     await auth.signOut()
@@ -159,6 +246,8 @@ const logout = async () => {
     toast.error('Logout failed: ' + err.message, { position: 'top-right' })
   }
 }
+
+// Format timestamp to readable date
 const formatDate = (timestamp) => {
   if (timestamp && typeof timestamp.toDate === 'function') {
     const date = timestamp.toDate()
@@ -173,14 +262,197 @@ const formatDate = (timestamp) => {
   return ''
 }
 
+// Copy URL to clipboard (with debug logging)
 const copyToClipboard = async () => {
+  console.log('Copy button clicked. URL to copy:', VideoCopyUrl.value)
   try {
+    if (urlInput.value) {
+      // Select the text in the input field
+      urlInput.value.select();
+      urlInput.value.setSelectionRange(0, 99999); // For mobile devices
+    }
+    
     await navigator.clipboard.writeText(VideoCopyUrl.value)
-    toast.info('Copied to clipboard')
+    toast.success('Link copied to clipboard!', { 
+      position: 'top-right',
+      duration: 2000
+    })
   } catch (err) {
     toast.error('Copy Error: ' + err.message, { position: 'top-right' })
   }
 }
+
+// Helper function to shorten a URL using CleanURI API
+const shortenUrl = async (longUrl) => {
+  try {
+    // Use TinyURL's API which doesn't have CORS issues
+    const tinyUrlApi = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl.trim())}`;
+    
+    // Fetch the shortened URL
+    const response = await fetch(tinyUrlApi);
+    
+    if (!response.ok) {
+      console.error(`TinyURL API error: ${response.status}`);
+      return longUrl; // fallback to original URL
+    }
+    
+    const shortUrl = await response.text();
+    return shortUrl || longUrl;
+  } catch (error) {
+    console.error('Error in shortenUrl:', error)
+    return longUrl
+  }
+}
+
+// Save shortened URL to Firebase
+const saveShortUrlToFirebase = async (videoId, shortUrl) => {
+  try {
+    if (!authStore.user || !videoId || !shortUrl) return;
+    
+    const videoDocRef = doc(db, 'users', authStore.user.uid, 'videos', videoId);
+    await updateDoc(videoDocRef, {
+      shortUrl: shortUrl
+    });
+    
+    console.log('Shortened URL saved to Firebase');
+  } catch (err) {
+    console.error('Error saving short URL to Firebase:', err);
+  }
+}
+
+// Function to force regeneration of transcript
+function regenerateTranscript() {
+  console.log('Forcing transcript regeneration with language:', selectedLanguage.value);
+  // Force clearing all transcript data
+  transcriptionText.value = '';
+  transcriptionError.value = '';
+  
+  // Also clear the transcript from the video object to prevent reusing it
+  if (video.value) {
+    delete video.value.transcript;
+    delete video.value.transcriptLanguage;
+  }
+  
+  // Now generate a fresh transcript
+  generateTranscript();
+}
+
+// Function to generate transcript of the video
+async function generateTranscript() {
+  console.log('Generate transcript called with API key:', config.ASSEMBLY_API_KEY);
+  console.log('Video information:', video.value);
+  console.log('Selected language:', selectedLanguage.value);
+
+  if (!video.value || !video.value.downloadURL) {
+    transcriptionError.value = 'No video available for transcription';
+    return;
+  }
+  
+  if (!config.ASSEMBLY_API_KEY) {
+    transcriptionError.value = 'API key not configured. Please set up your AssemblyAI API key in the config file.';
+    toast.error('Transcription API key not configured', { position: 'top-right' });
+    return;
+  }
+
+  try {
+    // Only use existing transcript if we're not forcing regeneration
+    // We only use it if there's no text already loaded AND the languages match
+    if (!transcriptionText.value && 
+        video.value.transcript && 
+        video.value.transcriptLanguage === selectedLanguage.value) {
+      console.log('Using existing transcript:', video.value.transcript);
+      transcriptionText.value = video.value.transcript;
+      return;
+    }
+
+    isTranscribing.value = true;
+    transcriptionError.value = '';
+    toast.info('Starting transcription process...', { position: 'top-right' });
+    
+    // Ensure we have a direct download URL for the video
+    let videoUrl = video.value.downloadURL;
+    
+    // If the URL is a Firebase storage path rather than a direct download URL
+    if (videoUrl.startsWith('videos/')) {
+      console.log('Converting Firebase storage path to direct URL');
+      try {
+        videoUrl = await getDownloadURL(storageRef(storage, video.value.downloadURL));
+        console.log('Converted URL:', videoUrl);
+      } catch (urlErr) {
+        console.error('Error getting download URL:', urlErr);
+        throw new Error('Could not get a direct download URL for the video');
+      }
+    }
+    
+    console.log('Submitting transcription request with URL:', videoUrl);
+    
+    // Initialize the AssemblyAI client
+    const client = new AssemblyAI({
+      apiKey: config.ASSEMBLY_API_KEY
+    });
+    
+    // Set up transcription parameters
+    const params = {
+      audio: videoUrl,
+      language_code: selectedLanguage.value
+    };
+    
+    // Start the transcription
+    const transcript = await client.transcripts.transcribe(params);
+    
+    // Check for errors
+    if (transcript.status === 'error') {
+      throw new Error(`Transcription error: ${transcript.error}`);
+    }
+    
+    // Get the transcription text
+    if (transcript.text) {
+      console.log('Final transcript text:', transcript.text);
+      transcriptionText.value = transcript.text;
+      
+      // Save to Firebase
+      if (authStore.user && video.value.id) {
+        console.log('Saving transcript to Firebase');
+        const videoDocRef = doc(db, 'users', authStore.user.uid, 'videos', video.value.id);
+        await updateDoc(videoDocRef, {
+          transcript: transcript.text,
+          transcriptLanguage: selectedLanguage.value
+        });
+        
+        // Update local video object
+        video.value.transcript = transcript.text;
+        video.value.transcriptLanguage = selectedLanguage.value;
+        
+        toast.success('Transcription completed and saved!', { position: 'top-right' });
+        console.log('Transcript saved successfully');
+      }
+    } else {
+      throw new Error('No transcript text was generated');
+    }
+  } catch (err) {
+    console.error('Transcription error details:', err);
+    transcriptionError.value = err.message;
+    toast.error(`Transcription failed: ${err.message}`, { position: 'top-right' });
+  } finally {
+    isTranscribing.value = false;
+  }
+}
+
+// Watch for language changes to regenerate transcript
+watch(selectedLanguage, (newLanguage) => {
+  // If language changed, always regenerate transcript
+  if (video.value && video.value.transcriptLanguage !== newLanguage) {
+    // Clear existing transcript to force regeneration
+    if (video.value.transcript) {
+      console.log('Language changed, regenerating transcript');
+      transcriptionText.value = '';
+      transcriptionError.value = '';
+      generateTranscript();
+    }
+  }
+})
+
+// Fetch video details and update sharing URLs
 const fetchVideoDetails = async () => {
   if (!authStore.user) {
     toast.error('User not authenticated.', { position: 'top-right' })
@@ -193,17 +465,44 @@ const fetchVideoDetails = async () => {
 
   if (passedVideo) {
     video.value = passedVideo
-    VideoCopyUrl.value = passedVideo.downloadURL
+    
+    // Check if the video already has a shortened URL
+    if (passedVideo.shortUrl) {
+      console.log('Using existing shortened URL from passed video');
+      VideoCopyUrl.value = passedVideo.shortUrl;
+    } else {
+      // Generate and save a new shortened URL
+      const shortUrl = await shortenUrl(passedVideo.downloadURL);
+      VideoCopyUrl.value = shortUrl;
+      
+      // Save the short URL to Firebase
+      await saveShortUrlToFirebase(passedVideo.id, shortUrl);
+    }
+    
     isLoading.value = false
   } else {
     try {
       const videoDocRef = doc(db, 'users', authStore.user.uid, 'videos', videoId)
       const videoSnap = await getDoc(videoDocRef)
+      
       if (videoSnap.exists()) {
         const videoData = videoSnap.data()
         video.value = { id: videoSnap.id, ...videoData }
-        video.value.downloadURL = await getDownloadURL(storageRef(storage, video.value.downloadURL))
-        VideoCopyUrl.value = video.value.downloadURL
+        
+        // Check if shortened URL already exists in Firebase
+        if (videoData.shortUrl) {
+          console.log('Using existing shortened URL from database');
+          VideoCopyUrl.value = videoData.shortUrl;
+        } else {
+          // Get the Firebase Storage download URL
+          const firebaseUrl = await getDownloadURL(storageRef(storage, video.value.downloadURL));
+          // Generate a new shortened URL
+          const shortUrl = await shortenUrl(firebaseUrl);
+          VideoCopyUrl.value = shortUrl;
+          
+          // Save the short URL to Firebase
+          await saveShortUrlToFirebase(videoId, shortUrl);
+        }
       } else {
         toast.error('Video not found.', { position: 'top-right' })
         router.push('/')
@@ -214,8 +513,31 @@ const fetchVideoDetails = async () => {
       isLoading.value = false
     }
   }
+
+  // Update sharing messages and URLs based on the shortened URL
+  message.value = `Video from ${userData.value.firstName}: ${VideoCopyUrl.value}`
+  whatsappUrl.value = `https://wa.me/?text=${encodeURIComponent(message.value)}`
+  telegramUrl.value = `https://t.me/share/url?url=${encodeURIComponent(VideoCopyUrl.value)}&text=${encodeURIComponent(message.value)}`
+
+  // After setting video.value and before ending isLoading
+  if (video.value && video.value.transcript) {
+    transcriptionText.value = video.value.transcript
+    selectedLanguage.value = video.value.transcriptLanguage || 'en'
+  }
 }
 
+// Prepare mailto link for sending email
+const prepareEmail = () => {
+  mailtoLink.value = `mailto:${recieverEmail.value}?subject=Video%20from%20${userData.value.firstName}&body=Here%20is%20the%20video%20link:%20${VideoCopyUrl.value}`
+  recieverEmail.value = ''
+}
+
+// Go back function
+const goBack = () => {
+  router.back()
+}
+
+// On component mount, fetch video details and subscribe to user data
 onMounted(() => {
   fetchVideoDetails()
   const user = auth.currentUser
@@ -231,23 +553,10 @@ onMounted(() => {
   }
 })
 
+// Clean up listener on component unmount
 onBeforeUnmount(() => {
   if (unsubscribeUserData) unsubscribeUserData()
 })
-
-const prepareEmail = () => {
-  mailtoLink.value = `mailto:${recieverEmail.value}?subject=Video%20from%20${userData.value.firstName}&body=Here%20is%20the%20video%20link:%20${VideoCopyUrl.value}`
-  recieverEmail.value = ''
-}
-const message = ref(`Video from ${userData.value.firstName}: ${VideoCopyUrl.value}`)
-whatsappUrl.value = `https://wa.me/?text=${encodeURIComponent(message.value)}`
-telegramUrl.value = `https://t.me/share/url?url=${encodeURIComponent(VideoCopyUrl.value)}&text=${encodeURIComponent(
-  message.value,
-)}`
-
-const goBack = () => {
-  router.back()
-}
 </script>
 
 <style scoped>
@@ -378,8 +687,14 @@ const goBack = () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .breadcrumb {
@@ -453,30 +768,47 @@ select:focus {
 
 .send {
   display: flex;
-  flex-wrap: wrap;
-  gap: 40px;
+  flex-direction: column;
+  gap: 30px;
   margin-bottom: 40px;
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
+
 .send-item {
   display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.input-container {
-  position: relative;
+  flex-direction: column;
   width: 100%;
 }
 
-.input-icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #777;
+.input-container {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
 }
 
-.send-item input[type='text'] {
-  padding-left: 45px;
+.copy-button {
+  white-space: nowrap;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  background: linear-gradient(to right, #e9ecf1, #f5f7fa);
+  color: #333;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.copy-button:hover {
+  background: linear-gradient(to right, #dde2e8, #e9ecf1);
+  transform: translateY(-2px);
+}
+
+.email-button {
+  white-space: nowrap;
+  padding: 14px 20px;
 }
 
 .share {
@@ -598,7 +930,9 @@ select:focus {
 }
 
 @keyframes spin {
-  to { transform: translateX(-50%) rotate(360deg); }
+  to {
+    transform: translateX(-50%) rotate(360deg);
+  }
 }
 
 .error p {
@@ -612,29 +946,30 @@ select:focus {
   .video-detail-container {
     padding: 30px 15px;
   }
-  
+
   .send {
     flex-direction: column;
     gap: 20px;
   }
-  
+
   .send-item {
     width: 100%;
   }
-  
+
   .send-item input[type='text'] {
     width: 100%;
   }
-  
+
   .video-name {
     font-size: 26px;
   }
-  
+
   .share-button {
     gap: 10px;
   }
-  
-  .btn-primary, .btn-secondary {
+
+  .btn-primary,
+  .btn-secondary {
     padding: 10px 16px;
     font-size: 14px;
   }
@@ -687,12 +1022,176 @@ select:focus {
   justify-content: center;
 }
 
-.breadcrumb i, .video-name i, .transcript i, .share p i, .upload-date i {
+.breadcrumb i,
+.video-name i,
+.transcript i,
+.share p i,
+.upload-date i {
   margin-right: 8px;
   color: #120b48;
 }
 
-.btn-primary i, .btn-secondary i, .btn-tertiary i {
+.btn-primary i,
+.btn-secondary i,
+.btn-tertiary i {
   margin-right: 8px;
+}
+
+/* New styled input containers */
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #120b48;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.styled-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  color: #333;
+  background-color: #fff;
+}
+
+.styled-input:focus {
+  outline: none;
+  border-color: #120b48;
+  box-shadow: 0 0 0 3px rgba(18, 11, 72, 0.1);
+}
+
+.styled-input::placeholder {
+  color: #999;
+}
+
+.styled-input:read-only {
+  background-color: #f8f9fc;
+  cursor: default;
+}
+
+.url-container {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+}
+
+.url-input {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background-color: #f5f7fa;
+  border: 1px solid #e2e8f0;
+}
+
+.email-input {
+  min-width: 250px;
+}
+
+.email-button {
+  white-space: nowrap;
+  padding: 14px 20px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .send {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  .send-item {
+    flex: 1;
+  }
+}
+
+.transcript-section {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.transcript-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.transcript-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.transcript-btn {
+  white-space: nowrap;
+}
+
+.transcript-content {
+  background-color: #f8f9fc;
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 120px;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+}
+
+.transcript-text {
+  white-space: pre-wrap;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.transcript-loading, 
+.transcript-error, 
+.transcript-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  height: 120px;
+  text-align: center;
+  color: #666;
+}
+
+.transcript-loading svg,
+.transcript-error svg,
+.transcript-empty svg {
+  font-size: 24px;
+  color: #120b48;
+}
+
+.transcript-error {
+  color: #e74c3c;
+}
+
+.transcript-error svg {
+  color: #e74c3c;
+}
+
+@media (max-width: 768px) {
+  .transcript-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .transcript-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 </style>

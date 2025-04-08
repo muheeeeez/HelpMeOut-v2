@@ -149,6 +149,23 @@
               />
             </div>
             
+            <div class="form-group audio-toggle-group">
+              <label class="toggle-label">
+                <span>
+                  <font-awesome-icon :icon="['fas', 'microphone']" />
+                  Capture Audio
+                </span>
+                <div class="toggle-switch">
+                  <input type="checkbox" v-model="captureAudio" />
+                  <span class="toggle-slider"></span>
+                </div>
+              </label>
+              <p class="audio-note">
+                <font-awesome-icon :icon="['fas', 'info-circle']" /> 
+                When enabled, your microphone and system sounds will be recorded
+              </p>
+            </div>
+            
             <div class="modal-actions">
               <button class="btn-primary" @click="startRecording">
                 <font-awesome-icon :icon="['fas', 'check-circle']" />
@@ -195,6 +212,7 @@ const uploadProgress = ref(0)
 const uploadError = ref('')
 const uploadSuccess = ref(false)
 const videoRef = ref(null)
+const captureAudio = ref(true)
 let screenStream = null
 
 const selectedFile = ref(null)
@@ -318,10 +336,23 @@ async function uploadVideos() {
 async function startRecording() {
   try {
     showRecordModal.value = false
-    screenStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { mediaSource: 'screen' },
-      audio: true,
-    })
+    
+    const displayMediaOptions = {
+      video: { 
+        mediaSource: 'screen',
+        frameRate: 30
+      },
+      audio: captureAudio.value
+    }
+    
+    screenStream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions)
+    
+    const hasAudioTrack = screenStream.getAudioTracks().length > 0
+    
+    if (captureAudio.value && !hasAudioTrack) {
+      toast.info('Audio capture was not permitted by the browser.', { position: 'top-right' })
+    }
+    
     screenStream.getTracks().forEach((track) => {
       track.addEventListener('ended', () => {
         stopRecording()
@@ -349,7 +380,9 @@ async function startRecording() {
 
     mediaRecorder.value.start()
     isRecording.value = true
-    toast.success('Recording started!', { position: 'top-right' })
+    
+    const audioStatus = hasAudioTrack ? 'with audio' : 'without audio'
+    toast.success(`Recording started ${audioStatus}!`, { position: 'top-right' })
   } catch (err) {
     showFirebaseError(err)
   }
@@ -1034,5 +1067,82 @@ onBeforeUnmount(() => {
   .video-content {
     padding: 1.5rem;
   }
+}
+
+.audio-toggle-group {
+  margin-top: 1.5rem;
+}
+
+.toggle-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.toggle-label span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--color-primary);
+}
+
+input:focus + .toggle-slider {
+  box-shadow: 0 0 1px var(--color-primary);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(26px);
+}
+
+.audio-note {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>
