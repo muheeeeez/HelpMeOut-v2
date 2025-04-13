@@ -750,7 +750,7 @@ onBeforeUnmount(() => {
 
 select {
   width: 140px;
-  height: 40px;
+  height: 48px;
   margin-bottom: 30px;
   padding: 8px 12px;
   border-radius: 8px;
@@ -1130,7 +1130,7 @@ select:focus {
 
 .transcript-controls {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 15px;
 }
 

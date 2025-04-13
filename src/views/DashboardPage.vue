@@ -926,7 +926,7 @@ onBeforeUnmount(() => {
 .modal-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--color-grey);
+  border: 1px solid #000;
   border-radius: var(--radius-md);
   background-color: #f9f9f9;
   font-size: 0.95rem;
@@ -1093,12 +1093,16 @@ onBeforeUnmount(() => {
   display: inline-block;
   width: 50px;
   height: 24px;
+  background-color: #ccc;
+  border-radius: 24px;
 }
 
 .toggle-switch input {
   opacity: 0;
   width: 0;
   height: 0;
+  background-color: #ccc;
+ 
 }
 
 .toggle-slider {
@@ -1120,7 +1124,7 @@ onBeforeUnmount(() => {
   width: 18px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: #632d2d;
   transition: .4s;
   border-radius: 50%;
 }
@@ -1131,10 +1135,12 @@ input:checked + .toggle-slider {
 
 input:focus + .toggle-slider {
   box-shadow: 0 0 1px var(--color-primary);
+  background-color: #ccc;
 }
 
 input:checked + .toggle-slider:before {
   transform: translateX(26px);
+  background-color: #000;
 }
 
 .audio-note {
